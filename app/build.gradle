@@ -1,0 +1,105 @@
+apply plugin: 'com.android.application'
+//2.Butter knife
+apply plugin: 'com.neenbedankt.android-apt'
+repositories {
+    // ABOUT com.github.Aspsine:SwipeToLoadLayout
+    maven { url 'https://jitpack.io' }
+    flatDir {
+        dir 'libs'
+    }
+}
+android {
+    compileSdkVersion 23
+    buildToolsVersion "23.0.1"
+
+    defaultConfig {
+        applicationId "www.ufcus.com"
+        minSdkVersion 14
+        targetSdkVersion 23
+        versionCode 1
+        versionName "1.0"
+        renderscriptTargetApi 20
+        renderscriptSupportModeEnabled true
+    }
+
+    signingConfigs {
+        config {
+            keyAlias 'android.keystore'
+            keyPassword 'liushuai'
+            storeFile file("/home/andyliu/lzs/code/test/BaiduMap_AndroidSDK_v4.0.0_Sample/BaiduMapsApiASDemo/app/android.keystore")
+            storePassword 'liushuai'
+        }
+    }
+
+    sourceSets {
+        main {
+            jniLibs.srcDir 'libs'
+        }
+
+        // Move the tests to tests/java, tests/res, etc...
+        instrumentTest.setRoot('tests')
+
+        // Move the build types to build-types/<type>
+        // For instance, build-types/debug/java, build-types/debug/AndroidManifest.xml, ...
+        // This moves them out of them default location under src/<type>/... which would
+        // conflict with src/ being used by the main source set.
+        // Adding new build types or product flavors should be accompanied
+        // by a similar customization.
+        debug.setRoot('build-types/debug')
+        release.setRoot('build-types/release')
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+        debug {
+            signingConfig signingConfigs.config
+        }
+    }
+
+}
+
+
+
+dependencies {
+    //    compile fileTree(dir: 'libs', include: ['*.jar'])
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    testCompile 'junit:junit:4.12'
+    compile 'com.android.support:appcompat-v7:23.2.1'
+    compile 'com.android.support:cardview-v7:23.2.1'
+    compile 'com.orhanobut:logger:1.14'
+    compile 'com.android.support:design:23.2.1'
+    //3.Butter knife
+    compile 'com.jakewharton:butterknife:8.0.1'
+    apt 'com.jakewharton:butterknife-compiler:8.0.1'
+    //glide图片加载框架
+    compile 'com.github.bumptech.glide:glide:3.7.0'
+    //Android 平滑图片加载和缓存库
+    compile 'jp.wasabeef:glide-transformations:2.0.1'
+    // If you want to use the GPU Filters
+    //    compile 'jp.co.cyberagent.android.gpuimage:gpuimage-library:1.3.0'
+    //    compile 'jp.wasabeef:glide-transformations:1.3.1'
+    compile 'com.zhy:okhttputils:2.6.2'
+    compile 'com.squareup.okhttp3:okhttp:3.3.1'
+    compile 'com.google.code.gson:gson:2.5'
+    //刷新框架
+    compile 'com.github.Aspsine:SwipeToLoadLayout:1.0.3'
+    //进度条
+    compile 'com.lsjwzh:materialloadingprogressbar:0.5.8-RELEASE'
+    //图标库
+    compile 'com.mikepenz:iconics-core:2.6.6@aar'
+    //所需字体
+    compile 'com.mikepenz:material-design-iconic-typeface:2.2.0.1@aar'
+    compile 'com.mikepenz:fontawesome-typeface:4.6.0.1@aar'
+    compile 'com.mikepenz:foundation-icons-typeface:3.0.0.1@aar'
+    //弹出框
+    compile('com.github.afollestad.material-dialogs:core:0.8.6.1@aar') {
+        transitive = true
+    }
+    compile('com.github.afollestad.material-dialogs:commons:0.8.6.1@aar') {
+        transitive = true
+    }
+    compile 'org.greenrobot:eventbus:3.0.0'
+}
