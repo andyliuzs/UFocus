@@ -9,7 +9,9 @@ import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.KeyEvent;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
@@ -27,8 +29,10 @@ import com.mikepenz.fontawesome_typeface_library.FontAwesome;
 import com.mikepenz.foundation_icons_typeface_library.FoundationIcons;
 import com.mikepenz.iconics.IconicsDrawable;
 import com.mikepenz.material_design_iconic_typeface_library.MaterialDesignIconic;
+import com.orhanobut.logger.Logger;
 
 import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
 
 import java.util.List;
 import java.util.Timer;
@@ -44,6 +48,7 @@ import me.xiaopan.android.widget.ToastUtils;
 import www.ufcus.com.R;
 import www.ufcus.com.activity.base.BaseActivity;
 import www.ufcus.com.beans.Aitem;
+import www.ufcus.com.event.CanSlideEvent;
 import www.ufcus.com.event.SkinChangeEvent;
 import www.ufcus.com.fragment.AllFragment;
 import www.ufcus.com.fragment.MapFragment;
@@ -116,7 +121,6 @@ public class MainActivity extends BaseActivity implements ColorChooserDialog.Col
         setContentView(R.layout.activity_main);
         //butterKnife注解生效，必须执行
         ButterKnife.bind(this);
-
         //状态栏沉浸状态
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             mStatusBar.setVisibility(View.VISIBLE);
@@ -407,6 +411,12 @@ public class MainActivity extends BaseActivity implements ColorChooserDialog.Col
         }
     }
 
+
+    @Subscribe
+    public void onEvent(CanSlideEvent event) {
+        mResideLayout.setChildWantMove(event.getB());
+    }
+
     @Override
     public void onBackPressed() {
         super.onBackPressed();
@@ -425,6 +435,7 @@ public class MainActivity extends BaseActivity implements ColorChooserDialog.Col
         }
         return false;
     }
+
 
     /***
      * 双击退出函数

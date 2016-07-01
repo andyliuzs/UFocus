@@ -7,6 +7,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.Window;
 import android.view.WindowManager;
 
+import org.greenrobot.eventbus.EventBus;
+
 import www.ufcus.com.R;
 import www.ufcus.com.http.RequestManager;
 import www.ufcus.com.theme.Theme;
@@ -25,6 +27,7 @@ public class BaseActivity extends AppCompatActivity {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             setTranslucentStatus(true);
         }
+        EventBus.getDefault().register(this);
     }
 
     /**
@@ -109,5 +112,6 @@ public class BaseActivity extends AppCompatActivity {
         super.onDestroy();
         //取消请求
         RequestManager.cancelRequest(getName());
+        EventBus.getDefault().unregister(this);
     }
 }

@@ -705,6 +705,7 @@ public class ResideLayout extends ViewGroup {
             }
 
             case MotionEvent.ACTION_MOVE: {
+                if (childWantMove) return false;
                 final float x = ev.getX();
                 final float y = ev.getY();
                 final float adx = Math.abs(x - mInitialMotionX);
@@ -1481,5 +1482,15 @@ public class ResideLayout extends ViewGroup {
             }
             mPostedRunnables.remove(this);
         }
+    }
+
+    /**
+     * add by lzs
+     * 防止子view滑动的时候父view跟随滑动
+     */
+    private static boolean childWantMove = false;
+
+    public void setChildWantMove(boolean childWantMove) {
+        this.childWantMove = childWantMove;
     }
 }

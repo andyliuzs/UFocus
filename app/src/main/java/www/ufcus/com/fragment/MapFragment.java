@@ -40,6 +40,8 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import www.ufcus.com.R;
+import www.ufcus.com.activity.MainActivity;
+import www.ufcus.com.event.CanSlideEvent;
 import www.ufcus.com.event.SkinChangeEvent;
 import www.ufcus.com.fragment.base.BaseFragment;
 import www.ufcus.com.utils.MyMapUtils;
@@ -91,7 +93,8 @@ public class MapFragment extends Fragment {
         }
 
         ButterKnife.bind(this, rootView);
-        EventBus.getDefault().register(this);
+
+        EventBus.getDefault().post(new CanSlideEvent(true));
         initMap();
         initView();
         return rootView;
@@ -220,8 +223,7 @@ public class MapFragment extends Fragment {
             MyMapUtils.printReceiveLocation(location);
             boolean isInRadius = MyMapUtils.isPolygonContainPoint(location.getLatitude(), location.getLongitude());
             String inResult = (isInRadius ? "您在办公区域内" : "您不在办公区域内");
-            Log.v("您的位置是否在区域内呢？", inResult);
-            Logger.v(inResult);
+            Logger.v("您的位置是否在区域内呢？\n" + inResult);
             MyLocationData locData = new MyLocationData.Builder()
                     .accuracy(location.getRadius())
                             // 此处设置开发者获取到的方向信息，顺时针0-360
@@ -240,12 +242,6 @@ public class MapFragment extends Fragment {
 
         public void onReceivePoi(BDLocation poiLocation) {
         }
-    }
-
-
-    @Subscribe
-    public void onEvent(SkinChangeEvent event) {
-
     }
 
 
@@ -275,8 +271,9 @@ public class MapFragment extends Fragment {
         mBaiduMap.setMyLocationEnabled(false);
         mMapView.onDestroy();
         mMapView = null;
-        EventBus.getDefault().unregister(this);
+        EventBus.getDefault().post(new CanSlideEvent(false));
 
     }
+
 
 }
