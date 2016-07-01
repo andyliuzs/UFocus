@@ -1,5 +1,7 @@
 package www.ufcus.com.utils;
 
+import android.content.Context;
+
 import com.baidu.location.BDLocation;
 import com.baidu.location.Poi;
 import com.baidu.mapapi.map.BaiduMap;
@@ -18,11 +20,23 @@ import java.util.ArrayList;
 import java.util.List;
 
 import me.xiaopan.java.util.GeometryUtils;
+import www.ufcus.com.R;
 
 /**
  * Created by andyliu on 16-7-1.
  */
 public class MyMapUtils {
+
+    /* 纬度  经度
+    西北40.072788,116.240637
+        东北40.072926,116.241428
+        西南40.072257,116.240812
+        东南40.07255,116.241652*/
+    private static final double[] xbyx = {40.072788, 116.240637};
+    private static final double[] dbyx = {40.072926, 116.241428};
+    private static final double[] xnyx = {40.072257, 116.240812};
+    private static final double[] dnyx = {40.07255, 116.241652};
+
 
     /***
      * 打印获取到的定位信息
@@ -106,15 +120,12 @@ public class MyMapUtils {
      * <p/>
      * 用友软件园某公司
      * //维度 经度
-     * 西北40.072635,116.240727
-     * 东北40.072769,116.241347
-     * 西南40.072386,116.240803
-     * 东南40.072493,116.241423
      */
+
 
     public static boolean isInRadius(double latitude, double longitude) {
         //西南XY，东北XY
-        double swX = 116.240803, swy = 40.072386, neX = 116.241347, neY = 40.072769;
+        double swX = xnyx[1], swy = xnyx[0], neX = dbyx[1], neY = dbyx[0];
 
         if (longitude >= swX && longitude <= neX && latitude >= swy && latitude <= neY) {
             return true;
@@ -134,7 +145,7 @@ public class MyMapUtils {
      * @return
      */
     public static boolean isPolygonContainPoint(double pointX, double pointY) {
-        double[][] vertexPoints = new double[][]{{40.072635, 116.240727}, {40.072769, 116.241347}, {40.072386, 116.240803}, {40.072493, 116.241423}};
+        double[][] vertexPoints = new double[][]{xbyx, dbyx, dnyx, xnyx};
         int nCross = 0;
 
         for (int i = 0; i < vertexPoints.length; ++i) {
@@ -162,21 +173,19 @@ public class MyMapUtils {
      *                  西南116.240803,40.072386
      *                  东南116.241423,40.072493
      */
-    public static void addArea(BaiduMap mBaiduMap, int fllColor) {
+    public static void addArea(Context context, BaiduMap mBaiduMap) {
         // 添加多边形  y x
-        LatLng pt1 = new LatLng(40.072635, 116.240727);
-        LatLng pt2 = new LatLng(40.072769, 116.241347);
-        LatLng pt3 = new LatLng(40.072493, 116.241423);
-        LatLng pt4 = new LatLng(40.072386, 116.240803);
-        LatLng pt5 = new LatLng(40.072386, 116.240803);
+        LatLng pt1 = new LatLng(xbyx[0], xbyx[1]);
+        LatLng pt2 = new LatLng(dbyx[0], dbyx[1]);
+        LatLng pt3 = new LatLng(dnyx[0], dnyx[1]);
+        LatLng pt4 = new LatLng(xnyx[0], xnyx[1]);
         List<LatLng> pts = new ArrayList<LatLng>();
         pts.add(pt1);
         pts.add(pt2);
         pts.add(pt3);
         pts.add(pt4);
-        pts.add(pt5);
         OverlayOptions ooPolygon = new PolygonOptions().points(pts)
-                .stroke(new Stroke(1, fllColor)).fillColor(fllColor);
+                .stroke(new Stroke(1, ThemeUtils.getThemeColor(context, R.attr.mapAreaColor))).fillColor(ThemeUtils.getThemeColor(context, R.attr.mapAreaColor));
         mBaiduMap.addOverlay(ooPolygon);
 
     }

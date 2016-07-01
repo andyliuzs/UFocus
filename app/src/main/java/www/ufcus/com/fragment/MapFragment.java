@@ -2,6 +2,7 @@ package www.ufcus.com.fragment;
 
 
 import android.content.Context;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -11,6 +12,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.RadioGroup;
+import android.widget.TextView;
 
 import com.baidu.location.BDLocation;
 import com.baidu.location.BDLocationListener;
@@ -67,6 +69,8 @@ public class MapFragment extends Fragment {
 //    RadioGroup.OnCheckedChangeListener radioButtonListener;
 //    @BindView(R.id.button1)
 //    Button requestLocButton;
+    @BindView(R.id.map_status)
+    TextView mStatus;
     boolean isFirstLoc = true; // 是否首次定位
 
     protected int getLayoutResource() {
@@ -93,7 +97,7 @@ public class MapFragment extends Fragment {
         }
 
         ButterKnife.bind(this, rootView);
-
+        EventBus.getDefault().register(this);
         EventBus.getDefault().post(new CanSlideEvent(true));
         initMap();
         initView();
@@ -170,7 +174,7 @@ public class MapFragment extends Fragment {
         mBaiduMap = mMapView.getMap();
         // 开启定位图层
         mBaiduMap.setMyLocationEnabled(true);
-        MyMapUtils.addArea(mBaiduMap, 0XAAFF83FA);
+        MyMapUtils.addArea(getActivity(), mBaiduMap);
         // 定位初始化
         mLocationClient = new LocationClient(getActivity());
         mLocationClient.registerLocationListener(myListener);
@@ -212,6 +216,14 @@ public class MapFragment extends Fragment {
     }
 
 
+    @Subscribe
+    public void onEvent(SkinChangeEvent event) {
+        Logger.v("收到主题切换了；额");
+        mMapView.getMap().clear();
+        MyMapUtils.addArea(getActivity(), mBaiduMap);
+
+    }
+
     public class MyLocationListener implements BDLocationListener {
 
         @Override
@@ -222,8 +234,17 @@ public class MapFragment extends Fragment {
             }
             MyMapUtils.printReceiveLocation(location);
             boolean isInRadius = MyMapUtils.isPolygonContainPoint(location.getLatitude(), location.getLongitude());
-            String inResult = (isInRadius ? "您在办公区域内" : "您不在办公区域内");
-            Logger.v("您的位置是否在区域内呢？\n" + inResult);
+//            String inResult = (isInRadius ? "您在办公区域内" : "您不在办公区域内");
+//            Logger.v("您的位置是否在区域内呢？\n" + inResult);
+            if (isInRadius) {
+                mStatus.setText("您在办公区域");
+                mStatus.setBackgroundColor(getResources().getColor(R.color.colorGreenPrimary));
+                mStatus.setTextColor(Color.WHITE);
+            } else {
+                mStatus.setText("您不在办公区域");
+                mStatus.setBackgroundColor(getResources().getColor(R.color.colorRedPrimary));
+                mStatus.setTextColor(Color.WHITE);
+            }
             MyLocationData locData = new MyLocationData.Builder()
                     .accuracy(location.getRadius())
                             // 此处设置开发者获取到的方向信息，顺时针0-360
@@ -250,6 +271,7 @@ public class MapFragment extends Fragment {
 
     @Override
     public void onPause() {
+        Logger.v("MapFragment onPause");
         mMapView.onPause();
         super.onPause();
 
@@ -257,12 +279,14 @@ public class MapFragment extends Fragment {
 
     @Override
     public void onResume() {
+        Logger.v("MapFragment onResume");
         mMapView.onResume();
         super.onResume();
     }
 
     @Override
     public void onDestroyView() {
+        Logger.v("MapFragment onDestroyView");
         super.onDestroyView();
         // 退出时销毁定位
         mLocationClient.stop();
@@ -272,7 +296,7 @@ public class MapFragment extends Fragment {
         mMapView.onDestroy();
         mMapView = null;
         EventBus.getDefault().post(new CanSlideEvent(false));
-
+        EventBus.getDefault().unregister(this);
     }
 
 

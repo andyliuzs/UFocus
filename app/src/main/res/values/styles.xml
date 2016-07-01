@@ -44,6 +44,7 @@
         <item name="md_title_color">@color/colorBluePrimary</item>
         <item name="md_link_color">@color/colorBluePrimary</item>
         <item name="md_positive_color">@color/colorBluePrimary</item>
+        <item name="mapAreaColor">@color/mapAreaBlueColor</item>
 
     </style>
 
@@ -56,7 +57,7 @@
         <item name="md_title_color">@color/colorRedPrimary</item>
         <item name="md_link_color">@color/colorRedPrimary</item>
         <item name="md_positive_color">@color/colorRedPrimary</item>
-
+        <item name="mapAreaColor">@color/mapAreaRedColor</item>
     </style>
     <!--brownTheme-->
     <style name="BrownTheme" parent="BaseTheme">
@@ -67,6 +68,7 @@
         <item name="md_title_color">@color/colorBrownPrimary</item>
         <item name="md_link_color">@color/colorBrownPrimary</item>
         <item name="md_positive_color">@color/colorBrownPrimary</item>
+        <item name="mapAreaColor">@color/mapAreaBrownColor</item>
 
     </style>
     <!--greenTheme-->
@@ -78,6 +80,7 @@
         <item name="md_title_color">@color/colorGreenPrimary</item>
         <item name="md_link_color">@color/colorGreenPrimary</item>
         <item name="md_positive_color">@color/colorGreenPrimary</item>
+        <item name="mapAreaColor">@color/mapAreaGreenColor</item>
     </style>
     <!--purpleTheme-->
     <style name="PurpleTheme" parent="BaseTheme">
@@ -88,6 +91,7 @@
         <item name="md_title_color">@color/colorPurplePrimary</item>
         <item name="md_link_color">@color/colorPurplePrimary</item>
         <item name="md_positive_color">@color/colorPurplePrimary</item>
+        <item name="mapAreaColor">@color/mapAreaPurpleColor</item>
     </style>
     <!--tealTheme-->
     <style name="TealTheme" parent="BaseTheme">
@@ -98,6 +102,7 @@
         <item name="md_title_color">@color/colorTealPrimary</item>
         <item name="md_link_color">@color/colorTealPrimary</item>
         <item name="md_positive_color">@color/colorTealPrimary</item>
+        <item name="mapAreaColor">@color/mapAreaTealColor</item>
     </style>
 
     <!--pinkTheme-->
@@ -109,6 +114,7 @@
         <item name="md_title_color">@color/colorPinkPrimary</item>
         <item name="md_link_color">@color/colorPinkPrimary</item>
         <item name="md_positive_color">@color/colorPinkPrimary</item>
+        <item name="mapAreaColor">@color/mapAreaPinkColor</item>
     </style>
 
     <!--deepPurpleTheme-->
@@ -120,6 +126,7 @@
         <item name="md_title_color">@color/colorDeepPurplePrimary</item>
         <item name="md_link_color">@color/colorDeepPurplePrimary</item>
         <item name="md_positive_color">@color/colorDeepPurplePrimary</item>
+        <item name="mapAreaColor">@color/mapAreaDeepPurpleColor</item>
     </style>
 
     <!--orange-->
@@ -131,6 +138,7 @@
         <item name="md_title_color">@color/colorOrangePrimary</item>
         <item name="md_link_color">@color/colorOrangePrimary</item>
         <item name="md_positive_color">@color/colorOrangePrimary</item>
+        <item name="mapAreaColor">@color/mapAreaOrangeColor</item>
     </style>
 
 
@@ -143,6 +151,7 @@
         <item name="md_title_color">@color/colorIndigoPrimary</item>
         <item name="md_link_color">@color/colorIndigoPrimary</item>
         <item name="md_positive_color">@color/colorIndigoPrimary</item>
+        <item name="mapAreaColor">@color/mapAreaIndigoColor</item>
     </style>
 
 
@@ -155,6 +164,7 @@
         <item name="md_title_color">@color/colorCyanPrimary</item>
         <item name="md_link_color">@color/colorCyanPrimary</item>
         <item name="md_positive_color">@color/colorCyanPrimary</item>
+        <item name="mapAreaColor">@color/mapAreaCyanColor</item>
     </style>
 
 
@@ -167,6 +177,7 @@
         <item name="md_title_color">@color/colorLightGreenPrimary</item>
         <item name="md_link_color">@color/colorLightGreenPrimary</item>
         <item name="md_positive_color">@color/colorLightGreenPrimary</item>
+        <item name="mapAreaColor">@color/mapAreaLightGreenColor</item>
     </style>
 
 
@@ -179,6 +190,7 @@
         <item name="md_title_color">@color/colorLimePrimary</item>
         <item name="md_link_color">@color/colorLimePrimary</item>
         <item name="md_positive_color">@color/colorLimePrimary</item>
+        <item name="mapAreaColor">@color/mapAreaLimeColor</item>
     </style>
 
 
@@ -191,6 +203,7 @@
         <item name="md_title_color">@color/colorDeepOrangePrimary</item>
         <item name="md_link_color">@color/colorDeepOrangePrimary</item>
         <item name="md_positive_color">@color/colorDeepOrangePrimary</item>
+        <item name="mapAreaColor">@color/mapAreaDeepOrangeColor</item>
     </style>
 
 
@@ -203,5 +216,6 @@
         <item name="md_title_color">@color/colorBlueGreyPrimary</item>
         <item name="md_link_color">@color/colorBlueGreyPrimary</item>
         <item name="md_positive_color">@color/colorBlueGreyPrimary</item>
+        <item name="mapAreaColor">@color/mapAreaBlueGreyColor</item>
     </style>
 </resources>

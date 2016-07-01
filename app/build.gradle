@@ -26,7 +26,7 @@ android {
         config {
             keyAlias 'android.keystore'
             keyPassword 'liushuai'
-            storeFile file("/home/andyliu/lzs/code/test/BaiduMap_AndroidSDK_v4.0.0_Sample/BaiduMapsApiASDemo/app/android.keystore")
+            storeFile file("/home/andyliu/lzs/code/test/android.keystore")
             storePassword 'liushuai'
         }
     }

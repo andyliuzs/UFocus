@@ -9,6 +9,7 @@
     <attr name="colorBackgroundAccent" format="color|reference" />
     <attr name="colorHint" format="color|reference" />
     <attr name="menuBackground" format="reference" />
+    <attr name="mapAreaColor" format="reference" />
 
     <declare-styleable name="GoogleCircleProgressView">
         <attr name="gcp_inner_radius" format="dimension" />
