@@ -1,7 +1,10 @@
 package www.ufcus.com.beans;
 
 import android.content.ContentResolver;
+import android.database.Cursor;
 import android.net.Uri;
+
+import java.util.ArrayList;
 
 import www.ufcus.com.db.DBManager;
 
@@ -59,6 +62,19 @@ public class ClockBean {
 
     public void setClockTime(long clockTime) {
         this.clockTime = clockTime;
+    }
+
+
+    public static ArrayList<ClockBean> getBeans(Cursor cursor) {
+        ArrayList<ClockBean> list = new ArrayList<ClockBean>();
+        while (cursor.moveToNext()) {
+            ClockBean bean = new ClockBean();
+            bean.setId(cursor.getInt(cursor.getColumnIndex(ClockBean._ID)));
+            bean.setPhone(cursor.getString(cursor.getColumnIndex(ClockBean.PHONE_NUMBER)));
+            bean.setClockTime(cursor.getLong(cursor.getColumnIndex(ClockBean.CLOCK_TIME)));
+            list.add(bean);
+        }
+        return list;
     }
 
 }

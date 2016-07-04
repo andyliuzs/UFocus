@@ -4,17 +4,21 @@ package www.ufcus.com.fragment;
 import android.content.ContentProvider;
 import android.content.ContentResolver;
 import android.content.ContentValues;
+import android.content.Context;
 import android.database.ContentObserver;
+import android.database.Cursor;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
+import android.support.v4.content.AsyncTaskLoader;
 import android.support.v4.content.Loader;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -37,12 +41,14 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import butterknife.OnLongClick;
 import www.ufcus.com.R;
+import www.ufcus.com.adapter.ClockAdapter;
 import www.ufcus.com.beans.ClockBean;
 import www.ufcus.com.event.CanSlideEvent;
 import www.ufcus.com.event.SkinChangeEvent;
@@ -70,6 +76,8 @@ public class MapFragment extends Fragment implements LoaderManager.LoaderCallbac
     // UI相关
     @BindView(R.id.map_status)
     TextView mStatus;
+    @BindView(R.id.list)
+    ListView mList;
     @BindView(R.id.tv_clock)
     TextView tvClock;
 
@@ -77,6 +85,8 @@ public class MapFragment extends Fragment implements LoaderManager.LoaderCallbac
     boolean isFirstLoc = true; // 是否首次定位
     WifiOpenHelper wifiOpenHelper;
     boolean isInRadius = false;
+    private List<ClockBean> clocks = new ArrayList<>();
+    private ClockAdapter clockAdapter;
 
     protected int getLayoutResource() {
         return R.layout.fragment_map;
@@ -105,15 +115,17 @@ public class MapFragment extends Fragment implements LoaderManager.LoaderCallbac
         EventBus.getDefault().register(this);
         EventBus.getDefault().post(new CanSlideEvent(true));
         initMap();
-        initView();
         initWifi();
+        initData();
         return rootView;
     }
 
-    @Override
-    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
+    private void initData() {
         getActivity().getContentResolver().registerContentObserver(ClockBean.ITEMS_URI, true, mContentObserver);
+        clockAdapter = new ClockAdapter(getActivity(), clocks);
+        mList.setAdapter(clockAdapter);
+        getLoaderManager().initLoader(0, null, this);
+
     }
 
     private void initWifi() {
@@ -207,7 +219,7 @@ public class MapFragment extends Fragment implements LoaderManager.LoaderCallbac
             }
             MyLocationData locData = new MyLocationData.Builder()
                     .accuracy(location.getRadius())
-                            // 此处设置开发者获取到的方向信息，顺时针0-360
+                    // 此处设置开发者获取到的方向信息，顺时针0-360
                     .direction(100).latitude(location.getLatitude())
                     .longitude(location.getLongitude()).build();
             mBaiduMap.setMyLocationData(locData);
@@ -246,8 +258,6 @@ public class MapFragment extends Fragment implements LoaderManager.LoaderCallbac
         }
     };
 
-    private void initView() {
-    }
 
     @Override
     public void onPause() {
@@ -319,17 +329,36 @@ public class MapFragment extends Fragment implements LoaderManager.LoaderCallbac
 
     @Override
     public Loader<ArrayList<ClockBean>> onCreateLoader(int id, Bundle args) {
-        return null;
+        DataAsyncTaskLoader dataAsyncTaskLoader = new DataAsyncTaskLoader(getActivity());
+        return dataAsyncTaskLoader;
     }
 
     @Override
     public void onLoadFinished(Loader<ArrayList<ClockBean>> loader, ArrayList<ClockBean> data) {
-
+        clocks = data;
+//        clockAdapter.setList(data);
+        clockAdapter.notifyDataSetChanged();
     }
 
     @Override
     public void onLoaderReset(Loader<ArrayList<ClockBean>> loader) {
+        loader = null;
+    }
 
+    private static class DataAsyncTaskLoader extends AsyncTaskLoader<ArrayList<ClockBean>> {
+
+        private Context context;
+
+        public DataAsyncTaskLoader(Context context) {
+            super(context);
+            this.context = context;
+        }
+
+        @Override
+        public ArrayList<ClockBean> loadInBackground() {
+            Cursor c = context.getContentResolver().query(ClockBean.ITEMS_URI, ClockBean.PROJECTION, null, null, null);
+            return ClockBean.getBeans(c);
+        }
     }
 
 }
