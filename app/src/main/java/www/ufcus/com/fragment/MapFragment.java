@@ -1,57 +1,59 @@
 package www.ufcus.com.fragment;
 
 
-import android.content.Context;
+import android.content.ContentProvider;
+import android.content.ContentResolver;
+import android.content.ContentValues;
+import android.database.ContentObserver;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.util.Log;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.Loader;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.RadioGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.baidu.location.BDLocation;
 import com.baidu.location.BDLocationListener;
 import com.baidu.location.LocationClient;
 import com.baidu.location.LocationClientOption;
-import com.baidu.location.Poi;
 import com.baidu.mapapi.SDKInitializer;
 import com.baidu.mapapi.map.BaiduMap;
 import com.baidu.mapapi.map.BitmapDescriptor;
-import com.baidu.mapapi.map.BitmapDescriptorFactory;
 import com.baidu.mapapi.map.MapStatus;
 import com.baidu.mapapi.map.MapStatusUpdateFactory;
 import com.baidu.mapapi.map.MapView;
 import com.baidu.mapapi.map.MyLocationConfiguration;
 import com.baidu.mapapi.map.MyLocationData;
 import com.baidu.mapapi.model.LatLng;
-import com.google.gson.Gson;
 import com.orhanobut.logger.Logger;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
-import org.json.JSONException;
-import org.json.JSONObject;
 
-import java.util.List;
+import java.util.ArrayList;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
+import butterknife.OnLongClick;
 import www.ufcus.com.R;
-import www.ufcus.com.activity.MainActivity;
+import www.ufcus.com.beans.ClockBean;
 import www.ufcus.com.event.CanSlideEvent;
 import www.ufcus.com.event.SkinChangeEvent;
-import www.ufcus.com.fragment.base.BaseFragment;
 import www.ufcus.com.utils.MyMapUtils;
+import www.ufcus.com.utils.PreUtils;
+import www.ufcus.com.utils.WifiOpenHelper;
 
 /**
  * A simple {@link Fragment} subclass.
  */
-public class MapFragment extends Fragment {
+public class MapFragment extends Fragment implements LoaderManager.LoaderCallbacks<ArrayList<ClockBean>> {
     protected View rootView;
     // 定位相关
     LocationClient mLocationClient;
@@ -66,12 +68,15 @@ public class MapFragment extends Fragment {
     BaiduMap mBaiduMap;
 
     // UI相关
-//    RadioGroup.OnCheckedChangeListener radioButtonListener;
-//    @BindView(R.id.button1)
-//    Button requestLocButton;
     @BindView(R.id.map_status)
     TextView mStatus;
+    @BindView(R.id.tv_clock)
+    TextView tvClock;
+
+
     boolean isFirstLoc = true; // 是否首次定位
+    WifiOpenHelper wifiOpenHelper;
+    boolean isInRadius = false;
 
     protected int getLayoutResource() {
         return R.layout.fragment_map;
@@ -101,7 +106,18 @@ public class MapFragment extends Fragment {
         EventBus.getDefault().post(new CanSlideEvent(true));
         initMap();
         initView();
+        initWifi();
         return rootView;
+    }
+
+    @Override
+    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        getActivity().getContentResolver().registerContentObserver(ClockBean.ITEMS_URI, true, mContentObserver);
+    }
+
+    private void initWifi() {
+        wifiOpenHelper = new WifiOpenHelper(getActivity());
     }
 
 
@@ -113,62 +129,6 @@ public class MapFragment extends Fragment {
 
     private void initMap() {
         mCurrentMode = MyLocationConfiguration.LocationMode.NORMAL;
-//        requestLocButton.setText("普通");
-//        View.OnClickListener btnClickListener = new View.OnClickListener() {
-//            public void onClick(View v) {
-//                switch (mCurrentMode) {
-//                    case NORMAL:
-//                        requestLocButton.setText("跟随");
-//                        mCurrentMode = MyLocationConfiguration.LocationMode.FOLLOWING;
-//                        mBaiduMap
-//                                .setMyLocationConfigeration(new MyLocationConfiguration(
-//                                        mCurrentMode, true, mCurrentMarker));
-//                        break;
-//                    case COMPASS:
-//                        requestLocButton.setText("普通");
-//                        mCurrentMode = MyLocationConfiguration.LocationMode.NORMAL;
-//                        mBaiduMap
-//                                .setMyLocationConfigeration(new MyLocationConfiguration(
-//                                        mCurrentMode, true, mCurrentMarker));
-//                        break;
-//                    case FOLLOWING:
-//                        requestLocButton.setText("罗盘");
-//                        mCurrentMode = MyLocationConfiguration.LocationMode.COMPASS;
-//                        mBaiduMap
-//                                .setMyLocationConfigeration(new MyLocationConfiguration(
-//                                        mCurrentMode, true, mCurrentMarker));
-//                        break;
-//                    default:
-//                        break;
-//                }
-//            }
-//        };
-//        requestLocButton.setOnClickListener(btnClickListener);
-//
-//        RadioGroup group = (RadioGroup) rootView.findViewById(R.id.radioGroup);
-//        radioButtonListener = new RadioGroup.OnCheckedChangeListener() {
-//            @Override
-//            public void onCheckedChanged(RadioGroup group, int checkedId) {
-//                if (checkedId == R.id.defaulticon) {
-        //传入null则，恢复默认图标
-//                    mCurrentMarker = null;
-//                    mBaiduMap
-//                            .setMyLocationConfigeration(new MyLocationConfiguration(
-//                                    mCurrentMode, true, null));
-//                }
-//                if (checkedId == R.id.customicon) {
-//                     //修改为自定义marker
-//                    mCurrentMarker = BitmapDescriptorFactory
-//                            .fromResource(R.drawable.icon_geo);
-//                    mBaiduMap
-//                            .setMyLocationConfigeration(new MyLocationConfiguration(
-//                                    mCurrentMode, true, mCurrentMarker,
-//                                    accuracyCircleFillColor, accuracyCircleStrokeColor));
-//                }
-//            }
-//        };
-//        group.setOnCheckedChangeListener(radioButtonListener);
-
         // 地图初始化
         mMapView = (MapView) rootView.findViewById(R.id.bmapView);
         mBaiduMap = mMapView.getMap();
@@ -218,7 +178,7 @@ public class MapFragment extends Fragment {
 
     @Subscribe
     public void onEvent(SkinChangeEvent event) {
-        Logger.v("收到主题切换了；额");
+        Logger.v("收到主题切换了");
         mMapView.getMap().clear();
         MyMapUtils.addArea(getActivity(), mBaiduMap);
 
@@ -233,7 +193,7 @@ public class MapFragment extends Fragment {
                 return;
             }
             MyMapUtils.printReceiveLocation(location);
-            boolean isInRadius = MyMapUtils.isPolygonContainPoint(location.getLatitude(), location.getLongitude());
+            isInRadius = MyMapUtils.isPolygonContainPoint(location.getLatitude(), location.getLongitude());
 //            String inResult = (isInRadius ? "您在办公区域内" : "您不在办公区域内");
 //            Logger.v("您的位置是否在区域内呢？\n" + inResult);
             if (isInRadius) {
@@ -265,6 +225,26 @@ public class MapFragment extends Fragment {
         }
     }
 
+    @OnLongClick({R.id.tv_clock})
+    public void onClick(View view) {
+        switch (view.getId()) {
+            case R.id.tv_clock:
+                if (checkCanClock()) {
+                    //打卡
+                    clock();
+                }
+                break;
+        }
+    }
+
+
+    ContentObserver mContentObserver = new ContentObserver(null) {
+        @Override
+        public void onChange(boolean selfChange) {
+            super.onChange(selfChange);
+            //监听到签到数据变化
+        }
+    };
 
     private void initView() {
     }
@@ -295,9 +275,61 @@ public class MapFragment extends Fragment {
         mBaiduMap.setMyLocationEnabled(false);
         mMapView.onDestroy();
         mMapView = null;
+        wifiOpenHelper = null;
+        getActivity().getContentResolver().unregisterContentObserver(mContentObserver);
         EventBus.getDefault().post(new CanSlideEvent(false));
         EventBus.getDefault().unregister(this);
     }
 
+
+    /***
+     * 判断是否可以打卡
+     *
+     * @return
+     */
+    private boolean checkCanClock() {
+        String useWifiSSID = PreUtils.getString(getActivity(), "attend_wifi_ssid", "");
+        boolean connectedWifi = wifiOpenHelper.checkIsConnected(useWifiSSID);
+
+        if (!connectedWifi) {
+            Toast.makeText(getActivity(), "未连接指定wifi", Toast.LENGTH_SHORT).show();
+            return false;
+        } else if (!isInRadius) {
+            Toast.makeText(getActivity(), "未在办公区域", Toast.LENGTH_SHORT).show();
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+
+    /***
+     * 打卡
+     */
+    private void clock() {
+        ContentResolver resolver = getActivity().getContentResolver();
+
+        ContentValues cValues = new ContentValues();
+        String phoneNumber = PreUtils.getString(getActivity(), "phone_number", "");
+        cValues.put(ClockBean.PHONE_NUMBER, phoneNumber);
+        cValues.put(ClockBean.CLOCK_TIME, phoneNumber);
+        resolver.insert(ClockBean.ITEMS_URI, cValues);
+    }
+
+
+    @Override
+    public Loader<ArrayList<ClockBean>> onCreateLoader(int id, Bundle args) {
+        return null;
+    }
+
+    @Override
+    public void onLoadFinished(Loader<ArrayList<ClockBean>> loader, ArrayList<ClockBean> data) {
+
+    }
+
+    @Override
+    public void onLoaderReset(Loader<ArrayList<ClockBean>> loader) {
+
+    }
 
 }

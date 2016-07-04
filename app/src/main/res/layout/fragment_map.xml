@@ -3,64 +3,56 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <RelativeLayout
+        android:id="@+id/rl_map"
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        android:layout_alignParentTop="true">
 
-    <com.baidu.mapapi.map.MapView
-        android:id="@+id/bmapView"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:clickable="true" />
+        <com.baidu.mapapi.map.MapView
+            android:id="@+id/bmapView"
+            android:layout_width="fill_parent"
+            android:layout_height="200dp"
+            android:clickable="true" />
 
-    <TextView
-        android:id="@+id/map_status"
-        android:layout_width="wrap_content"
-        android:layout_height="18dp"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentRight="true"
-        android:layout_centerVertical="true"
+        <TextView
+            android:id="@+id/map_status"
+            android:layout_width="wrap_content"
+            android:layout_height="18dp"
+            android:layout_alignParentBottom="true"
+            android:layout_centerVertical="true"
+            android:gravity="center"
+            android:textColor="@color/colorRedPrimary"
+            android:textSize="14sp" />
+    </RelativeLayout>
+
+    <ListView
+        android:id="@+id/list"
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        android:layout_below="@+id/rl_map"
+        android:divider="@null" />
+
+
+    <LinearLayout
+        android:id="@+id/ll_btn"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/list"
         android:gravity="center"
-        android:textColor="@color/colorRedPrimary"
-        android:textSize="14sp" />
+        android:orientation="horizontal">
 
-    <!--<LinearLayout-->
-    <!--android:layout_width="wrap_content"-->
-    <!--android:layout_height="wrap_content"-->
-    <!--android:layout_alignParentRight="true"-->
-    <!--android:layout_marginTop="80dip"-->
-    <!--android:background="#D000"-->
-    <!--android:minWidth="100dip"-->
-    <!--android:orientation="vertical"-->
-    <!--android:padding="2dp" >-->
+        <TextView
+            android:id="@+id/tv_clock"
+            android:layout_width="85dp"
+            android:layout_height="45dp"
+            android:background="@color/colorGreenAccent"
+            android:gravity="center"
+            android:text="打卡"
+            android:textColor="@color/white" />
 
-    <!--<RadioGroup-->
-    <!--android:id="@+id/radioGroup"-->
-    <!--android:layout_width="wrap_content"-->
-    <!--android:layout_height="wrap_content"-->
-    <!--android:contentDescription="定位icon" >-->
 
-    <!--<RadioButton-->
-    <!--android:id="@+id/defaulticon"-->
-    <!--android:layout_width="wrap_content"-->
-    <!--android:layout_height="wrap_content"-->
-    <!--android:checked="true"-->
-    <!--android:text="默认图标" >-->
-    <!--</RadioButton>-->
+    </LinearLayout>
 
-    <!--<RadioButton-->
-    <!--android:id="@+id/customicon"-->
-    <!--android:layout_width="wrap_content"-->
-    <!--android:layout_height="wrap_content"-->
-    <!--android:text="自定义图标" >-->
-    <!--</RadioButton>-->
-    <!--</RadioGroup>-->
-    <!--</LinearLayout>-->
-
-    <!--<Button-->
-    <!--android:id="@+id/button1"-->
-    <!--android:layout_width="wrap_content"-->
-    <!--android:layout_height="wrap_content"-->
-    <!--android:layout_alignParentRight="true"-->
-    <!--android:layout_alignParentTop="true"-->
-    <!--android:layout_marginRight="25dp"-->
-    <!--android:layout_marginTop="10dip" />-->
 
 </RelativeLayout>

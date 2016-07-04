@@ -200,7 +200,16 @@ public class MainActivity extends BaseActivity implements ColorChooserDialog.Col
                 .icon(MaterialDesignIconic.Icon.gmi_view_comfy).sizeDp((int) TOOL_BAR_ICON_SIZE));
         mTitle.setText(R.string.app_name);
         MyViewUtils.switchFragment(this, currentFragment, new AllFragment());
+        testData();
+    }
 
+    /**
+     * 测试数据,如果有服务端可删除本方法
+     */
+    private void testData() {
+
+        PreUtils.putString(this, "phone_number", "18301214392");
+        PreUtils.putString(this, "attend_wifi_ssid", "office");
     }
 
 

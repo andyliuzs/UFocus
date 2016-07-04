@@ -50,7 +50,9 @@
             android:name="com.baidu.location.f"
             android:enabled="true"
             android:process=":remote"></service>
-
+        <provider
+            android:name=".db.DBProvider"
+            android:authorities="www.ufcus.com.db" />
     </application>
 
 </manifest>

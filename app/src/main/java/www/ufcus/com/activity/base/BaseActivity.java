@@ -1,11 +1,15 @@
 package www.ufcus.com.activity.base;
 
 import android.annotation.TargetApi;
+import android.app.ActivityManager;
+import android.content.Context;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Window;
 import android.view.WindowManager;
+
+import com.orhanobut.logger.Logger;
 
 import org.greenrobot.eventbus.EventBus;
 
@@ -113,5 +117,22 @@ public class BaseActivity extends AppCompatActivity {
         //取消请求
         RequestManager.cancelRequest(getName());
         EventBus.getDefault().unregister(this);
+        exit();
+    }
+
+
+    private void exit() {
+        Logger.v("packageName=" + getPackageName());
+        ActivityManager manager = (ActivityManager) getApplicationContext().getSystemService(Context.ACTIVITY_SERVICE);
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+            if (service.process.contains(getPackageName())) {
+                android.os.Process.killProcess(service.pid);
+                Logger.v("kill org.ancode.priv:sipStack > pid = " + service.pid);
+                break;
+            }
+        }
+
+        android.os.Process.killProcess(android.os.Process.myPid());    //获取PID
+        System.exit(0);
     }
 }

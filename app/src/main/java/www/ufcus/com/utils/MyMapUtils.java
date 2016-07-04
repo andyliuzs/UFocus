@@ -189,5 +189,4 @@ public class MyMapUtils {
         mBaiduMap.addOverlay(ooPolygon);
 
     }
-
 }

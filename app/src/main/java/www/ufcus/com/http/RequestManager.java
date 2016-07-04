@@ -15,7 +15,7 @@ import java.util.HashMap;
 import me.xiaopan.android.net.NetworkUtils;
 import okhttp3.Call;
 import www.ufcus.com.app.App;
-import www.ufcus.com.db.DBManager;
+import www.ufcus.com.db.DBProvider;
 import www.ufcus.com.http.callback.CallBack;
 
 /**
@@ -44,8 +44,8 @@ public class RequestManager {
 
     private static void get(Object tag, final String url, final boolean isCache, final CallBack callBack) {
         //读取缓存数据
-        final DBManager dbManager = new DBManager();
-        String data = dbManager.getData(url);
+        final DBProvider dbProvider = new DBProvider();
+        String data = dbProvider.getData(url);
         if (!"".equals(data)) {
             //解析json数据并返回成功回调
             callBack.onSuccess(new Gson().fromJson(data, callBack.type));
@@ -78,7 +78,7 @@ public class RequestManager {
                 handler.post(new Runnable() {
                     @Override
                     public void run() {
-                        handleResponse(response, callBack, dbManager, url, isCache);
+                        handleResponse(response, callBack, dbProvider, url, isCache);
                     }
                 });
 
@@ -113,11 +113,11 @@ public class RequestManager {
      *
      * @param json
      * @param callBack
-     * @param dbManager
+     * @param dbProvider
      * @param url
      */
-    private static void handleResponse(String json, CallBack callBack, DBManager
-            dbManager, String url, boolean isCache) {
+    private static void handleResponse(String json, CallBack callBack, DBProvider
+            dbProvider, String url, boolean isCache) {
         try {
             //转化为json对象
             JSONObject jsonObject = new JSONObject(json);
@@ -140,7 +140,7 @@ public class RequestManager {
             String results = jsonObject.getString(RESULTS);
             if (isCache) {
                 //插入缓存数据库
-                dbManager.insertData(url, results);
+                dbProvider.insertData(url, results);
             }
 
             //返回成功回调
