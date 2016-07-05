@@ -30,7 +30,7 @@ public class ClockDetailResult {
     /**
      * 工作状态
      * 1.正常
-     * 2.不正常
+     * 2.异常
      */
     public String workStatus;
 
@@ -110,7 +110,7 @@ public class ClockDetailResult {
     }
 
 
-    public ArrayList<ClockDetailResult> getBeans(Cursor cursor) {
+    public static ArrayList<ClockDetailResult> getBeans(Cursor cursor) {
         ArrayList<ClockDetailResult> clockTotalResultsList = new ArrayList<ClockDetailResult>();
         if (cursor.moveToFirst()) {
             while (cursor.moveToNext()) {
@@ -120,13 +120,12 @@ public class ClockDetailResult {
                 long firstTime = cursor.getLong(cursor.getColumnIndex(ClockDetailResult.AS_FIRST_TIME));
                 long lastTime = cursor.getLong(cursor.getColumnIndex(ClockDetailResult.AS_LAST_TIME));
 
-                long dateTime = cursor.getLong(cursor.getColumnIndex(ClockBean.CLOCK_TIME));
-                int day = DateTimeUtils.getDay(dateTime);
+                int day = DateTimeUtils.getDay(lastTime);
                 String dayStr = (Utils.getNumberDigit(day) == 1 ? "0" + day : String.valueOf(day)) + "日";
 
                 //计算星期
                 Calendar calendar = Calendar.getInstance();
-                calendar.setTime(new Date(dateTime));
+                calendar.setTime(new Date(lastTime));
                 int dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK);
                 String week = "星期" + DateTimeUtils.getWeekChineseName(dayOfWeek);
 
@@ -141,11 +140,10 @@ public class ClockDetailResult {
                 if (nomalWorkHours < workHours) {
                     cdr.setWorkStatus("正常");
                 } else {
-                    cdr.setWorkStatus("不正常");
+                    cdr.setWorkStatus("异常");
                 }
                 cdr.setWorkTime(workHours + "小时");
-
-
+                clockTotalResultsList.add(cdr);
             }
         }
 

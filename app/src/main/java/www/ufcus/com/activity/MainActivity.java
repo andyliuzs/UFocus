@@ -156,14 +156,14 @@ public class MainActivity extends BaseActivity implements ColorChooserDialog.Col
         Glide.with(this)
                 .load(R.drawable.head_img)
                 .placeholder(new IconicsDrawable(this)
-                                .icon(FoundationIcons.Icon.fou_photo)
-                                .color(Color.GRAY)
-                                .backgroundColor(Color.WHITE)
-                                .roundedCornersDp(40)
-                                .paddingDp(15)
+                        .icon(FoundationIcons.Icon.fou_photo)
+                        .color(Color.GRAY)
+                        .backgroundColor(Color.WHITE)
+                        .roundedCornersDp(40)
+                        .paddingDp(15)
 
                 )
-                        //圆形
+                //圆形
                 .bitmapTransform(new CropCircleTransformation(this))
                 .dontAnimate()
                 .into(headImg);
@@ -182,7 +182,7 @@ public class MainActivity extends BaseActivity implements ColorChooserDialog.Col
             public void onSuccess(List<Aitem> result) {
                 Glide.with(MainActivity.this)
                         .load(result.get(0).getUrl())
-                                //设置占位图
+                        //设置占位图
                         .placeholder(new IconicsDrawable(MainActivity.this)
                                 .icon(FoundationIcons.Icon.fou_photo)
                                 .color(Color.GRAY)
@@ -435,6 +435,7 @@ public class MainActivity extends BaseActivity implements ColorChooserDialog.Col
     @Override
     public void onBackPressed() {
         super.onBackPressed();
+        mainCallBack.onBackPressed();
     }
 
 
@@ -474,5 +475,15 @@ public class MainActivity extends BaseActivity implements ColorChooserDialog.Col
             finish();
             System.exit(0);
         }
+    }
+
+    private MainCallBack mainCallBack;
+
+    public void setMainCallBack(MainCallBack mainCallBack) {
+        this.mainCallBack = mainCallBack;
+    }
+
+    public interface MainCallBack {
+        void onBackPressed();
     }
 }

@@ -59,25 +59,35 @@ public class ClockDetailsAdapter extends ArrayAdapter<ClockDetailResult> {
         if (convertView != null) {
             viewHolder = (ViewHolder) convertView.getTag();
         } else {
-            View view = LayoutInflater.from(context).inflate(R.layout.item_clock_bean, null);
+            View view = LayoutInflater.from(context).inflate(R.layout.item_detail_clock_bean, null);
             viewHolder = new ViewHolder(view);
             view.setTag(viewHolder);
             convertView = view;
         }
-        viewHolder.phoneNumber = bean.getPhoneNumber();
-        long clockTime = bean.
-        String clockDateStr = bean.getGroupBy();
-        String clockTimeStr =Utils.getTime(clockTime);
-        viewHolder.clockDate.setText(clockDateStr);
-        viewHolder.clockTime.setText(clockTimeStr);
+        viewHolder.day.setText(bean.getDay());
+        viewHolder.week.setText(bean.getWeek());
+        viewHolder.firstClockTime.setText(bean.getFirstTime());
+        viewHolder.lastClockTime.setText(bean.getLastTime());
+        viewHolder.workTime.setText(bean.getWorkTime());
+        viewHolder.workStatus.setText(bean.getWorkStatus());
+
         return convertView;
     }
 
     static class ViewHolder {
-        @BindView(R.id.clock_date)
-        TextView clockDate;
-        @BindView(R.id.clock_time)
-        TextView clockTime;
+        @BindView(R.id.day)
+        TextView day;
+        @BindView(R.id.week)
+        TextView week;
+        @BindView(R.id.first_clock_time)
+        TextView firstClockTime;
+        @BindView(R.id.last_clock_time)
+        TextView lastClockTime;
+        @BindView(R.id.work_time)
+        TextView workTime;
+        @BindView(R.id.work_status)
+        TextView workStatus;
+
         String phoneNumber;
 
         ViewHolder(View view) {
