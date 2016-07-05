@@ -115,6 +115,11 @@ public class MainActivity extends BaseActivity implements ColorChooserDialog.Col
     private Fragment currentFragment;
     private static int TOOL_BAR_ICON_SIZE = 25;
 
+
+    public Fragment getCurrentFragment() {
+        return currentFragment;
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -210,6 +215,7 @@ public class MainActivity extends BaseActivity implements ColorChooserDialog.Col
 
         PreUtils.putString(this, "phone_number", "18301214392");
         PreUtils.putString(this, "attend_wifi_ssid", "office");
+        PreUtils.putInt(this, "work_time", 8);
     }
 
 

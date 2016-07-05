@@ -39,21 +39,27 @@ import com.orhanobut.logger.Logger;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
+import org.w3c.dom.Text;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import butterknife.OnLongClick;
+import me.xiaopan.java.util.DateTimeUtils;
 import www.ufcus.com.R;
+import www.ufcus.com.activity.MainActivity;
 import www.ufcus.com.adapter.ClockAdapter;
 import www.ufcus.com.beans.ClockBean;
 import www.ufcus.com.event.CanSlideEvent;
 import www.ufcus.com.event.SkinChangeEvent;
 import www.ufcus.com.utils.MyMapUtils;
+import www.ufcus.com.utils.MyViewUtils;
 import www.ufcus.com.utils.PreUtils;
+import www.ufcus.com.utils.Utils;
 import www.ufcus.com.utils.WifiOpenHelper;
 
 /**
@@ -80,7 +86,8 @@ public class MapFragment extends Fragment implements LoaderManager.LoaderCallbac
     ListView mList;
     @BindView(R.id.tv_clock)
     TextView tvClock;
-
+    @BindView(R.id.tv_clock_details)
+    TextView tvClockDetails;
 
     boolean isFirstLoc = true; // 是否首次定位
     WifiOpenHelper wifiOpenHelper;
@@ -116,14 +123,14 @@ public class MapFragment extends Fragment implements LoaderManager.LoaderCallbac
         EventBus.getDefault().post(new CanSlideEvent(true));
         initMap();
         initWifi();
+        getActivity().getContentResolver().registerContentObserver(ClockBean.ITEMS_URI, true, mContentObserver);
+        clockAdapter = new ClockAdapter(getActivity(), clocks);
+        mList.setAdapter(clockAdapter);
         initData();
         return rootView;
     }
 
     private void initData() {
-        getActivity().getContentResolver().registerContentObserver(ClockBean.ITEMS_URI, true, mContentObserver);
-        clockAdapter = new ClockAdapter(getActivity(), clocks);
-        mList.setAdapter(clockAdapter);
         getLoaderManager().initLoader(0, null, this);
 
     }
@@ -196,6 +203,28 @@ public class MapFragment extends Fragment implements LoaderManager.LoaderCallbac
 
     }
 
+    @OnLongClick({R.id.tv_clock})
+    public boolean OnLongClick(View view) {
+        switch (view.getId()) {
+            case R.id.tv_clock:
+                if (checkCanClock()) {
+                    //打卡
+                    clock();
+                }
+                break;
+        }
+        return true;
+    }
+
+    @OnClick({R.id.tv_clock_details})
+    public void onClick(View view) {
+        switch (view.getId()) {
+            case R.id.tv_clock_details:
+                MyViewUtils.switchFragment(((MainActivity) getActivity()), ((MainActivity) getActivity()).getCurrentFragment(), new ClockDetailsFragment());
+                break;
+        }
+    }
+
     public class MyLocationListener implements BDLocationListener {
 
         @Override
@@ -204,7 +233,7 @@ public class MapFragment extends Fragment implements LoaderManager.LoaderCallbac
             if (location == null || mMapView == null) {
                 return;
             }
-            MyMapUtils.printReceiveLocation(location);
+//            MyMapUtils.printReceiveLocation(location);
             isInRadius = MyMapUtils.isPolygonContainPoint(location.getLatitude(), location.getLongitude());
 //            String inResult = (isInRadius ? "您在办公区域内" : "您不在办公区域内");
 //            Logger.v("您的位置是否在区域内呢？\n" + inResult);
@@ -219,7 +248,7 @@ public class MapFragment extends Fragment implements LoaderManager.LoaderCallbac
             }
             MyLocationData locData = new MyLocationData.Builder()
                     .accuracy(location.getRadius())
-                    // 此处设置开发者获取到的方向信息，顺时针0-360
+                            // 此处设置开发者获取到的方向信息，顺时针0-360
                     .direction(100).latitude(location.getLatitude())
                     .longitude(location.getLongitude()).build();
             mBaiduMap.setMyLocationData(locData);
@@ -237,23 +266,11 @@ public class MapFragment extends Fragment implements LoaderManager.LoaderCallbac
         }
     }
 
-    @OnLongClick({R.id.tv_clock})
-    public void onClick(View view) {
-        switch (view.getId()) {
-            case R.id.tv_clock:
-                if (checkCanClock()) {
-                    //打卡
-                    clock();
-                }
-                break;
-        }
-    }
-
-
     ContentObserver mContentObserver = new ContentObserver(null) {
         @Override
         public void onChange(boolean selfChange) {
             super.onChange(selfChange);
+            getLoaderManager().restartLoader(0, null, MapFragment.this);
             //监听到签到数据变化
         }
     };
@@ -322,27 +339,33 @@ public class MapFragment extends Fragment implements LoaderManager.LoaderCallbac
         ContentValues cValues = new ContentValues();
         String phoneNumber = PreUtils.getString(getActivity(), "phone_number", "");
         cValues.put(ClockBean.PHONE_NUMBER, phoneNumber);
-        cValues.put(ClockBean.CLOCK_TIME, phoneNumber);
+        long dateTime = new Date().getTime();
+        cValues.put(ClockBean.CLOCK_TIME, dateTime);
+        cValues.put(ClockBean.GROUP_BY, Utils.getDate(dateTime));
         resolver.insert(ClockBean.ITEMS_URI, cValues);
+
     }
 
 
     @Override
     public Loader<ArrayList<ClockBean>> onCreateLoader(int id, Bundle args) {
+        Logger.v("onCreateLoader");
         DataAsyncTaskLoader dataAsyncTaskLoader = new DataAsyncTaskLoader(getActivity());
         return dataAsyncTaskLoader;
     }
 
     @Override
     public void onLoadFinished(Loader<ArrayList<ClockBean>> loader, ArrayList<ClockBean> data) {
+        Logger.v("onLoadFinished");
         clocks = data;
-//        clockAdapter.setList(data);
+        clockAdapter.setList(data);
         clockAdapter.notifyDataSetChanged();
     }
 
     @Override
     public void onLoaderReset(Loader<ArrayList<ClockBean>> loader) {
         loader = null;
+        clockAdapter.notifyDataSetChanged();
     }
 
     private static class DataAsyncTaskLoader extends AsyncTaskLoader<ArrayList<ClockBean>> {
@@ -356,8 +379,25 @@ public class MapFragment extends Fragment implements LoaderManager.LoaderCallbac
 
         @Override
         public ArrayList<ClockBean> loadInBackground() {
-            Cursor c = context.getContentResolver().query(ClockBean.ITEMS_URI, ClockBean.PROJECTION, null, null, null);
-            return ClockBean.getBeans(c);
+            Logger.v("DataAsyncTaskLoader--》loadInBackground");
+            String order = ClockBean.CLOCK_TIME + " DESC limit 0,2";
+            Cursor c = context.getContentResolver().query(ClockBean.ITEMS_URI, ClockBean.PROJECTION, null, null, order);
+//            Cursor c = context.getContentResolver().query(ClockBean.ITEMS_URI, new String[]{"MAX(" + ClockBean.CLOCK_TIME + ") as maxtime"}, " 1=1" + " ) " + " group by (" + ClockBean.CLOCK_TIME, null, null);
+//            Cursor c = context.getContentResolver().query(ClockBean.ITEMS_URI, new String[]{"MAX("+ClockBean.CLOCK_TIME+") as max","MIN(" + ClockBean.CLOCK_TIME + ") as min","(MAX(" + ClockBean.CLOCK_TIME + ")-MIN(" + ClockBean.CLOCK_TIME + ")) as maxtime"}, null, null, null);
+            ArrayList<ClockBean> clockBeans = ClockBean.getBeans(c);
+            return clockBeans;
+        }
+
+        @Override
+        protected void onStartLoading() {
+            Logger.v("DataAsyncTaskLoader--》onStartLoading");
+            forceLoad();    //强制加载
+        }
+
+        @Override
+        protected void onStopLoading() {
+            Logger.v("DataAsyncTaskLoader--》onStopLoading");
+            super.onStopLoading();
         }
     }
 

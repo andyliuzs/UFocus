@@ -8,32 +8,30 @@ import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import me.xiaopan.java.util.DateTimeUtils;
 import www.ufcus.com.R;
-import www.ufcus.com.beans.ClockBean;
+import www.ufcus.com.beans.ClockDetailResult;
 import www.ufcus.com.utils.Utils;
 
 /**
  * Created by andyliu on 16-7-4.
  */
-public class ClockAdapter extends ArrayAdapter<ClockBean> {
+public class ClockDetailsAdapter extends ArrayAdapter<ClockDetailResult> {
 
     private Context context;
-    private List<ClockBean> mClocks;
+    private List<ClockDetailResult> mClocks;
 
 
-    public ClockAdapter(Context context, List<ClockBean> clocks) {
+    public ClockDetailsAdapter(Context context, List<ClockDetailResult> clocks) {
         super(context, 0, clocks);
         mClocks = clocks;
         this.context = context;
     }
 
-    public void setList(ArrayList<ClockBean> clocks) {
+    public void setList(ArrayList<ClockDetailResult> clocks) {
         this.mClocks = clocks;
     }
 
@@ -43,7 +41,7 @@ public class ClockAdapter extends ArrayAdapter<ClockBean> {
     }
 
     @Override
-    public ClockBean getItem(int position) {
+    public ClockDetailResult getItem(int position) {
         return mClocks.get(position);
     }
 
@@ -56,7 +54,7 @@ public class ClockAdapter extends ArrayAdapter<ClockBean> {
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        ClockBean bean = mClocks.get(position);
+        ClockDetailResult bean = mClocks.get(position);
         ViewHolder viewHolder = null;
         if (convertView != null) {
             viewHolder = (ViewHolder) convertView.getTag();
@@ -67,7 +65,7 @@ public class ClockAdapter extends ArrayAdapter<ClockBean> {
             convertView = view;
         }
         viewHolder.phoneNumber = bean.getPhoneNumber();
-        long clockTime = bean.getClockTime();
+        long clockTime = bean.
         String clockDateStr = bean.getGroupBy();
         String clockTimeStr =Utils.getTime(clockTime);
         viewHolder.clockDate.setText(clockDateStr);

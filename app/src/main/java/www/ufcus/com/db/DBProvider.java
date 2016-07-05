@@ -45,50 +45,48 @@ public class DBProvider extends ContentProvider {
 
     public static final String[] CLOCK_PROJECTION = new String[]{ClockBean._ID, ClockBean.PHONE_NUMBER, ClockBean.CLOCK_TIME};
 
-    public DBProvider() {
-        if (dbHelper == null)
-            dbHelper = new DBHelper(App.getInstance());
-    }
+//    public DBProvider() {
+//        dbHelper = new DBHelper(getContext());
+//    }
 
-    /**
-     * 插入缓存
-     *
-     * @param url  地址
-     * @param data json数据
-     */
-    public synchronized void insertData(String url, String data) {
-        db = dbHelper.getWritableDatabase();
-        ContentValues values = new ContentValues();
-        values.put(DBHelper.URL, url);
-        values.put(DBHelper.DATA, data);
-        values.put(DBHelper.TIME, System.currentTimeMillis());
-        db.replace(DBHelper.CACHE, null, values);
-        db.close();
-    }
-
-    /**
-     * 根据url获取缓存数据
-     *
-     * @param url 地址
-     * @return 数据
-     */
-    public synchronized String getData(String url) {
-        String result = "";
-        db = dbHelper.getReadableDatabase();
-        Cursor cursor = db.rawQuery("SELECT * FROM " + DBHelper.CACHE + " WHERE URL = ?", new String[]{url});
-        while (cursor.moveToNext()) {
-            result = cursor.getString(cursor.getColumnIndex(DBHelper.DATA));
-        }
-        cursor.close();
-        db.close();
-        return result;
-    }
+//    /**
+//     * 插入缓存
+//     *
+//     * @param url  地址
+//     * @param data json数据
+//     */
+//    public synchronized void insertData(String url, String data) {
+//        db = dbHelper.getWritableDatabase();
+//        ContentValues values = new ContentValues();
+//        values.put(DBHelper.URL, url);
+//        values.put(DBHelper.DATA, data);
+//        values.put(DBHelper.TIME, System.currentTimeMillis());
+//        db.replace(DBHelper.CACHE, null, values);
+//        db.close();
+//    }
+//
+//    /**
+//     * 根据url获取缓存数据
+//     *
+//     * @param url 地址
+//     * @return 数据
+//     */
+//    public synchronized String getData(String url) {
+//        String result = "";
+//        db = dbHelper.getReadableDatabase();
+//        Cursor cursor = db.rawQuery("SELECT * FROM " + DBHelper.CACHE + " WHERE URL = ?", new String[]{url});
+//        while (cursor.moveToNext()) {
+//            result = cursor.getString(cursor.getColumnIndex(DBHelper.DATA));
+//        }
+//        cursor.close();
+//        db.close();
+//        return result;
+//    }
 
     @Override
     public boolean onCreate() {
-        if (dbHelper == null)
-            dbHelper = new DBHelper(App.getInstance());
-        return true;
+        dbHelper = new DBHelper(getContext());
+        return dbHelper == null ? false : true;
     }
 
     @Nullable
@@ -110,7 +108,7 @@ public class DBProvider extends ContentProvider {
             throw new SecurityException("You are asking wrong values " + type);
         }
         checkProjection(possibles, projection);
-        checkSelection(possibles, selection);
+//        checkSelection(possibles, selection);
 
         Cursor c;
         long id;
