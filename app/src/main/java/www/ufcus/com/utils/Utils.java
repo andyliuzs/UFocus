@@ -1,5 +1,7 @@
 package www.ufcus.com.utils;
 
+import android.text.TextUtils;
+
 import me.xiaopan.java.util.DateTimeUtils;
 
 /**
@@ -40,7 +42,7 @@ public class Utils {
         int second = DateTimeUtils.getSecond(dateTime);
         String secondStr = getNumberDigit(second) == 1 ? "0" + second : String.valueOf(second);
 
-        return   hourStr + ":" + minuteStr + ":" + secondStr;
+        return hourStr + ":" + minuteStr + ":" + secondStr;
     }
 
     /**
@@ -58,4 +60,17 @@ public class Utils {
 
         return n;
     }
+
+
+    /***
+     * 判断是否为数字
+     *
+     * @param text
+     * @return
+     */
+    public static boolean checkIsNumber(String text) {
+        if (TextUtils.isEmpty(text)) return false;
+        return text.matches("^[-+]?(([0-9]+)([.]([0-9]+))?|([.]([0-9]+))?)$");
+    }
+
 }

@@ -187,7 +187,7 @@ public class MyMapUtils {
             Logger.v("target t_lati" + t_latitude + ",t_longti" + t_longitude + "-me lati" + latitude + ",longti" + longitude + "相距" + distance);
             if (distance == -1) return false;
 
-            int localDistance = PreUtils.getInt(App.getInstance(), "distance", 200);
+            float localDistance = PreUtils.getFloat(App.getInstance(), "distance", 200);
 
             if (distance <= localDistance) {
                 return true;

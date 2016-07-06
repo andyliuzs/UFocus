@@ -47,6 +47,7 @@ import www.ufcus.com.event.SwitchFragmentEvent;
 import www.ufcus.com.fragment.AllFragment;
 import www.ufcus.com.fragment.ClockDetailsFragment;
 import www.ufcus.com.fragment.ClockFragment;
+import www.ufcus.com.fragment.SettingClockDataFragment;
 import www.ufcus.com.http.RequestManager;
 import www.ufcus.com.http.callback.CallBack;
 import www.ufcus.com.theme.ColorUiUtil;
@@ -153,14 +154,14 @@ public class MainActivity extends BaseActivity implements ColorChooserDialog.Col
         Glide.with(this)
                 .load(R.drawable.head_img)
                 .placeholder(new IconicsDrawable(this)
-                                .icon(FoundationIcons.Icon.fou_photo)
-                                .color(Color.GRAY)
-                                .backgroundColor(Color.WHITE)
-                                .roundedCornersDp(40)
-                                .paddingDp(15)
+                        .icon(FoundationIcons.Icon.fou_photo)
+                        .color(Color.GRAY)
+                        .backgroundColor(Color.WHITE)
+                        .roundedCornersDp(40)
+                        .paddingDp(15)
 
                 )
-                        //圆形
+                //圆形
                 .bitmapTransform(new CropCircleTransformation(this))
                 .dontAnimate()
                 .into(headImg);
@@ -179,7 +180,7 @@ public class MainActivity extends BaseActivity implements ColorChooserDialog.Col
             public void onSuccess(List<Aitem> result) {
                 Glide.with(MainActivity.this)
                         .load(result.get(0).getUrl())
-                                //设置占位图
+                        //设置占位图
                         .placeholder(new IconicsDrawable(MainActivity.this)
                                 .icon(FoundationIcons.Icon.fou_photo)
                                 .color(Color.GRAY)
@@ -213,11 +214,11 @@ public class MainActivity extends BaseActivity implements ColorChooserDialog.Col
 
         PreUtils.putString(this, "phone_number", "18301214392");
         PreUtils.putString(this, "attend_wifi_ssid", "office");
-        PreUtils.putInt(this, "work_time", 8);
+        PreUtils.putFloat(this, "work_time", 8);
         //办公区域经纬度 默认用友软件园
         PreUtils.putString(this, "j_w", "116.240794,40.072816");
         //距离目标点有效距离默认300米
-        PreUtils.putInt(this, "distance", 200);
+        PreUtils.putFloat(this, "distance", 200);
     }
 
 
@@ -236,6 +237,7 @@ public class MainActivity extends BaseActivity implements ColorChooserDialog.Col
                 goPage(CLOCK_FRAGMENT);
                 break;
             case R.id.fuli:
+                goPage(SETTING_CLOCK_DATA_FRAGMENT);
 //                mResideLayout.closePane();
 //                mIcon.setImageDrawable(new IconicsDrawable(this).color(Color.WHITE).icon(MaterialDesignIconic.Icon.gmi_mood).sizeDp((int) TOOL_BAR_ICON_SIZE));
 //                mTitle.setText(R.string.fuli);
@@ -337,6 +339,7 @@ public class MainActivity extends BaseActivity implements ColorChooserDialog.Col
     public static final String ALL_FRAGMENT = "all_fragment";
     public static final String CLOCK_FRAGMENT = "clock_fragment";
     public static final String CLOCK_DETAIL_FRAGMENT = "clock_detail_fragment";
+    public static final String SETTING_CLOCK_DATA_FRAGMENT = "setting_clock_data_fragment";
     public String nowPage = ALL_FRAGMENT;
 
     private void goPage(String page) {
@@ -364,6 +367,13 @@ public class MainActivity extends BaseActivity implements ColorChooserDialog.Col
                 mIcon.setImageDrawable(new IconicsDrawable(this).color(Color.WHITE).icon(MaterialDesignIconic.Icon.gmi_arrow_back).sizeDp((int) TOOL_BAR_ICON_SIZE));
                 mTitle.setText(R.string.clock_detail);
                 currentFragment = MyViewUtils.switchFragment(this, currentFragment, new ClockDetailsFragment());
+                break;
+            case SETTING_CLOCK_DATA_FRAGMENT:
+                rightBtn.setVisibility(View.GONE);
+                mResideLayout.closePane();
+                mIcon.setImageDrawable(new IconicsDrawable(this).color(Color.WHITE).icon(MaterialDesignIconic.Icon.gmi_mood).sizeDp((int) TOOL_BAR_ICON_SIZE));
+                mTitle.setText("考勤设置");
+                currentFragment = MyViewUtils.switchFragment(this, currentFragment, new SettingClockDataFragment());
                 break;
         }
 

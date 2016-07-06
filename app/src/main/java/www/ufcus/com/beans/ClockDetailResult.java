@@ -147,7 +147,7 @@ public class ClockDetailResult {
             cdr.setLastTime(Utils.getTime(lastTime));
             cdr.setDay(dayStr);
             cdr.setWeek(week);
-            int nomalWorkHours = PreUtils.getInt(App.getInstance(), "work_time", 0);
+            float nomalWorkHours = PreUtils.getFloat(App.getInstance(), "work_time", 0);
 
             if (nomalWorkHours < workHours) {
                 cdr.setWorkStatus("正常");

@@ -80,7 +80,18 @@ public class PreUtils {
         final SharedPreferences.Editor editor = PreUtils.getSharedPreferences(context).edit();
 
         editor.putString(key, pValue);
+        return editor.commit();
+    }
 
+
+    public static float getFloat(final Context context, final String key, final float defaultValue) {
+        return PreUtils.getSharedPreferences(context).getFloat(key, defaultValue);
+    }
+
+    public static boolean putFloat(final Context context, final String key, final float pValue) {
+        final SharedPreferences.Editor editor = PreUtils.getSharedPreferences(context).edit();
+
+        editor.putFloat(key, pValue);
         return editor.commit();
     }
 
