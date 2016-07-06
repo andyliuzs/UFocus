@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:id="@+id/ll_btn"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/bmapView"
+        android:background="@color/colorPrimary"
+        android:gravity="center"
+        android:orientation="vertical">
+
+        <EditText
+            android:id="@+id/et_distance"
+            android:layout_width="300dp"
+            android:layout_height="45dp"
+            android:background="@drawable/edit_green_frame_selector"
+            android:focusable="true"
+            android:hint="请输入打卡有效距离"
+            android:inputType="numberDecimal"
+            android:padding="8dp"
+            android:textSize="14sp" />
+
+        <EditText
+            android:id="@+id/et_wifi_ssid"
+            android:layout_width="300dp"
+            android:layout_height="45dp"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/edit_green_frame_selector"
+            android:focusable="true"
+            android:hint="请输入wifi名称"
+            android:padding="8dp"
+            android:textSize="14sp" />
+
+        <EditText
+            android:id="@+id/et_work_time"
+            android:layout_width="300dp"
+            android:layout_height="45dp"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/edit_green_frame_selector"
+            android:focusable="true"
+            android:hint="请输入工作时长"
+            android:inputType="number"
+            android:padding="8dp"
+            android:textSize="14sp" />
+
+        <TextView
+            android:id="@+id/tv_ok"
+            android:layout_width="300dp"
+            android:layout_height="45dp"
+            android:layout_marginTop="20dp"
+            android:background="@drawable/write_solid"
+            android:gravity="center"
+            android:text="确定"
+            android:textColor="@color/white"
+            android:textSize="18sp" />
+
+    </LinearLayout>
+
+    <com.baidu.mapapi.map.MapView
+        android:id="@+id/bmapView"
+        android:layout_width="fill_parent"
+        android:layout_height="350dp"
+        android:clickable="true" />
+
+
+</RelativeLayout>

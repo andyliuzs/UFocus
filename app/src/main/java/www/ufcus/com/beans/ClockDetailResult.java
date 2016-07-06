@@ -2,6 +2,8 @@ package www.ufcus.com.beans;
 
 import android.database.Cursor;
 
+import com.orhanobut.logger.Logger;
+
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -27,6 +29,8 @@ public class ClockDetailResult {
     public String lastTime;
     public String workTime;
     public String phoneNumber;
+
+    public String groupBy;
     /**
      * 工作状态
      * 1.正常
@@ -109,45 +113,59 @@ public class ClockDetailResult {
         this.phoneNumber = phoneNumber;
     }
 
+    public String getGroupBy() {
+        return groupBy;
+    }
+
+    public void setGroupBy(String groupBy) {
+        this.groupBy = groupBy;
+    }
 
     public static ArrayList<ClockDetailResult> getBeans(Cursor cursor) {
         ArrayList<ClockDetailResult> clockTotalResultsList = new ArrayList<ClockDetailResult>();
-        if (cursor.moveToFirst()) {
-            while (cursor.moveToNext()) {
-                ClockDetailResult cdr = new ClockDetailResult();
-                int id = cursor.getInt(cursor.getColumnIndex(ClockBean._ID));
-                String phoneNumber = cursor.getString(cursor.getColumnIndex(ClockBean.PHONE_NUMBER));
-                long firstTime = cursor.getLong(cursor.getColumnIndex(ClockDetailResult.AS_FIRST_TIME));
-                long lastTime = cursor.getLong(cursor.getColumnIndex(ClockDetailResult.AS_LAST_TIME));
+        cursor.moveToPosition(-1);
+        while (cursor.moveToNext()) {
+            ClockDetailResult cdr = new ClockDetailResult();
+            int id = cursor.getInt(cursor.getColumnIndex(ClockBean._ID));
+            String phoneNumber = cursor.getString(cursor.getColumnIndex(ClockBean.PHONE_NUMBER));
+            long firstTime = cursor.getLong(cursor.getColumnIndex(ClockDetailResult.AS_FIRST_TIME));
+            long lastTime = cursor.getLong(cursor.getColumnIndex(ClockDetailResult.AS_LAST_TIME));
+            String groupBy = cursor.getString(cursor.getColumnIndex(ClockBean.GROUP_BY));
+            int day = DateTimeUtils.getDay(lastTime);
+            String dayStr = (Utils.getNumberDigit(day) == 1 ? "0" + day : String.valueOf(day)) + "日";
 
-                int day = DateTimeUtils.getDay(lastTime);
-                String dayStr = (Utils.getNumberDigit(day) == 1 ? "0" + day : String.valueOf(day)) + "日";
+            //计算星期
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(new Date(lastTime));
+            int dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK);
+            String week = "星期" + DateTimeUtils.getWeekChineseName(dayOfWeek);
 
-                //计算星期
-                Calendar calendar = Calendar.getInstance();
-                calendar.setTime(new Date(lastTime));
-                int dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK);
-                String week = "星期" + DateTimeUtils.getWeekChineseName(dayOfWeek);
+            double workHours = ((double) (lastTime - firstTime)) / 1000 / 60 / 60;
+            cdr.setId(id);
+            cdr.setPhoneNumber(phoneNumber);
+            cdr.setFirstTime(Utils.getTime(firstTime));
+            cdr.setLastTime(Utils.getTime(lastTime));
+            cdr.setDay(dayStr);
+            cdr.setWeek(week);
+            int nomalWorkHours = PreUtils.getInt(App.getInstance(), "work_time", 0);
 
-                double workHours = (lastTime - firstTime) / 1000 / 60 / 60;
-                cdr.setId(id);
-                cdr.setPhoneNumber(phoneNumber);
-                cdr.setFirstTime(Utils.getTime(firstTime));
-                cdr.setLastTime(Utils.getTime(lastTime));
-                cdr.setDay(dayStr);
-                cdr.setWeek(week);
-                int nomalWorkHours = PreUtils.getInt(App.getInstance(), "work_time", 0);
-                if (nomalWorkHours < workHours) {
-                    cdr.setWorkStatus("正常");
-                } else {
-                    cdr.setWorkStatus("异常");
-                }
-                cdr.setWorkTime(workHours + "小时");
-                clockTotalResultsList.add(cdr);
+            if (nomalWorkHours < workHours) {
+                cdr.setWorkStatus("正常");
+            } else {
+                cdr.setWorkStatus("异常");
             }
+            java.text.DecimalFormat df = new java.text.DecimalFormat("0.0");
+            cdr.setWorkTime(String.format("%.2f小时", workHours));
+            cdr.setGroupBy(groupBy);
+            Logger.v(cdr.toString());
+            clockTotalResultsList.add(cdr);
         }
 
         return clockTotalResultsList;
     }
 
+    @Override
+    public String toString() {
+        return "id=" + id + ",firsttime=" + firstTime + ",lasttime=" + lastTime + ",worktime=" + workTime + ",workstatus=" + workStatus + ",day=" + day + ",week=" + week + ",groupBy=" + groupBy;
+    }
 }

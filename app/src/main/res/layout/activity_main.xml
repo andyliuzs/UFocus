@@ -56,9 +56,9 @@
                     android:text="@string/all" />
 
                 <TextView
-                    android:id="@+id/map"
+                    android:id="@+id/clock"
                     style="@style/MenuStyle"
-                    android:text="@string/map" />
+                    android:text="@string/clock" />
 
                 <TextView
                     android:id="@+id/fuli"

@@ -3,6 +3,7 @@ package www.ufcus.com.event;
 /**
  * Created by dongjunkun on 2016/2/19.
  */
+//控制是否可以滑动
 public class CanSlideEvent {
     private boolean b;
 

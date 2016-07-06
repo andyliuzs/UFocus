@@ -6,12 +6,8 @@ import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Build;
 import android.os.Bundle;
-import android.provider.MediaStore;
 import android.support.v4.app.Fragment;
-import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.KeyEvent;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
@@ -23,7 +19,6 @@ import android.widget.Toast;
 
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.afollestad.materialdialogs.color.ColorChooserDialog;
-import com.baidu.mapapi.SDKInitializer;
 import com.bumptech.glide.Glide;
 import com.mikepenz.fontawesome_typeface_library.FontAwesome;
 import com.mikepenz.foundation_icons_typeface_library.FoundationIcons;
@@ -43,15 +38,15 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 import jp.wasabeef.glide.transformations.CropCircleTransformation;
 import me.xiaopan.android.preference.PreferencesUtils;
-import me.xiaopan.android.view.ViewUtils;
-import me.xiaopan.android.widget.ToastUtils;
 import www.ufcus.com.R;
 import www.ufcus.com.activity.base.BaseActivity;
 import www.ufcus.com.beans.Aitem;
 import www.ufcus.com.event.CanSlideEvent;
 import www.ufcus.com.event.SkinChangeEvent;
+import www.ufcus.com.event.SwitchFragmentEvent;
 import www.ufcus.com.fragment.AllFragment;
-import www.ufcus.com.fragment.MapFragment;
+import www.ufcus.com.fragment.ClockDetailsFragment;
+import www.ufcus.com.fragment.ClockFragment;
 import www.ufcus.com.http.RequestManager;
 import www.ufcus.com.http.callback.CallBack;
 import www.ufcus.com.theme.ColorUiUtil;
@@ -80,8 +75,8 @@ public class MainActivity extends BaseActivity implements ColorChooserDialog.Col
     ScrollView mScrollView;
     @BindView(R.id.all)
     TextView mAll;
-    @BindView(R.id.map)
-    TextView mMap;
+    @BindView(R.id.clock)
+    TextView mClock;
     @BindView(R.id.fuli)
     TextView mFuli;
     @BindView(R.id.android)
@@ -113,6 +108,8 @@ public class MainActivity extends BaseActivity implements ColorChooserDialog.Col
     @BindView(R.id.more)
     TextView mMore;
     private Fragment currentFragment;
+    @BindView(R.id.rightBtn)
+    TextView rightBtn;
     private static int TOOL_BAR_ICON_SIZE = 25;
 
 
@@ -137,7 +134,7 @@ public class MainActivity extends BaseActivity implements ColorChooserDialog.Col
         }
 
         MyViewUtils.setIconDrawable(this, 16, 10, mAll, MaterialDesignIconic.Icon.gmi_view_comfy);
-        MyViewUtils.setIconDrawable(this, 16, 10, mMap, MaterialDesignIconic.Icon.gmi_map);
+        MyViewUtils.setIconDrawable(this, 16, 10, mClock, MaterialDesignIconic.Icon.gmi_map);
 
         MyViewUtils.setIconDrawable(this, 16, 10, mFuli, MaterialDesignIconic.Icon.gmi_mood);
         MyViewUtils.setIconDrawable(this, 16, 10, mAndroid, MaterialDesignIconic.Icon.gmi_android);
@@ -156,14 +153,14 @@ public class MainActivity extends BaseActivity implements ColorChooserDialog.Col
         Glide.with(this)
                 .load(R.drawable.head_img)
                 .placeholder(new IconicsDrawable(this)
-                        .icon(FoundationIcons.Icon.fou_photo)
-                        .color(Color.GRAY)
-                        .backgroundColor(Color.WHITE)
-                        .roundedCornersDp(40)
-                        .paddingDp(15)
+                                .icon(FoundationIcons.Icon.fou_photo)
+                                .color(Color.GRAY)
+                                .backgroundColor(Color.WHITE)
+                                .roundedCornersDp(40)
+                                .paddingDp(15)
 
                 )
-                //圆形
+                        //圆形
                 .bitmapTransform(new CropCircleTransformation(this))
                 .dontAnimate()
                 .into(headImg);
@@ -182,7 +179,7 @@ public class MainActivity extends BaseActivity implements ColorChooserDialog.Col
             public void onSuccess(List<Aitem> result) {
                 Glide.with(MainActivity.this)
                         .load(result.get(0).getUrl())
-                        //设置占位图
+                                //设置占位图
                         .placeholder(new IconicsDrawable(MainActivity.this)
                                 .icon(FoundationIcons.Icon.fou_photo)
                                 .color(Color.GRAY)
@@ -201,10 +198,11 @@ public class MainActivity extends BaseActivity implements ColorChooserDialog.Col
             PreferencesUtils.putBoolean(this, "isFirst", false);
         }
 
-        mIcon.setImageDrawable(new IconicsDrawable(this).color(Color.WHITE)
-                .icon(MaterialDesignIconic.Icon.gmi_view_comfy).sizeDp((int) TOOL_BAR_ICON_SIZE));
-        mTitle.setText(R.string.app_name);
-        MyViewUtils.switchFragment(this, currentFragment, new AllFragment());
+//        mIcon.setImageDrawable(new IconicsDrawable(this).color(Color.WHITE)
+//                .icon(MaterialDesignIconic.Icon.gmi_view_comfy).sizeDp((int) TOOL_BAR_ICON_SIZE));
+//        mTitle.setText(R.string.app_name);
+//        MyViewUtils.switchFragment(this, currentFragment, new AllFragment());
+        goPage(ALL_FRAGMENT);
         testData();
     }
 
@@ -216,28 +214,26 @@ public class MainActivity extends BaseActivity implements ColorChooserDialog.Col
         PreUtils.putString(this, "phone_number", "18301214392");
         PreUtils.putString(this, "attend_wifi_ssid", "office");
         PreUtils.putInt(this, "work_time", 8);
+        //办公区域经纬度 默认用友软件园
+        PreUtils.putString(this, "j_w", "116.240794,40.072816");
+        //距离目标点有效距离默认300米
+        PreUtils.putInt(this, "distance", 200);
     }
 
 
-    @OnClick({R.id.headImg, R.id.all, R.id.map, R.id.fuli, R.id.android, R.id.ios, R.id.video, R.id.front,
+    @OnClick({R.id.headImg, R.id.all, R.id.clock, R.id.fuli, R.id.android, R.id.ios, R.id.video, R.id.front,
             R.id.resource, R.id.about,
-            R.id.app, R.id.theme, R.id.icon, R.id.more})
+            R.id.app, R.id.theme, R.id.icon, R.id.more, R.id.rightBtn})
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.headImg:
                 MyViewUtils.showCenterToast(this, "再点吃掉你丫的");
                 break;
             case R.id.all:
-                mResideLayout.closePane();
-                mIcon.setImageDrawable(new IconicsDrawable(this).color(Color.WHITE).icon(MaterialDesignIconic.Icon.gmi_view_comfy).sizeDp((int) TOOL_BAR_ICON_SIZE));
-                mTitle.setText(R.string.app_name);
-                currentFragment = MyViewUtils.switchFragment(this, currentFragment, new AllFragment());
+                goPage(ALL_FRAGMENT);
                 break;
-            case R.id.map:
-                mResideLayout.closePane();
-                mIcon.setImageDrawable(new IconicsDrawable(this).color(Color.WHITE).icon(MaterialDesignIconic.Icon.gmi_map).sizeDp((int) TOOL_BAR_ICON_SIZE));
-                mTitle.setText(R.string.map);
-                currentFragment = MyViewUtils.switchFragment(this, currentFragment, new MapFragment());
+            case R.id.clock:
+                goPage(CLOCK_FRAGMENT);
                 break;
             case R.id.fuli:
 //                mResideLayout.closePane();
@@ -315,9 +311,74 @@ public class MainActivity extends BaseActivity implements ColorChooserDialog.Col
                         .show();
                 break;
             case R.id.icon:
-                mResideLayout.openPane();
+
+                switch (nowPage) {
+                    case CLOCK_DETAIL_FRAGMENT:
+                        goPage(CLOCK_FRAGMENT);
+                        break;
+
+                    default:
+                        mResideLayout.openPane();
+
+                }
+                break;
+
+            case R.id.rightBtn:
+                switch (nowPage) {
+                    case CLOCK_FRAGMENT:
+                        goPage(CLOCK_DETAIL_FRAGMENT);
+                        break;
+
+                }
                 break;
         }
+    }
+
+    public static final String ALL_FRAGMENT = "all_fragment";
+    public static final String CLOCK_FRAGMENT = "clock_fragment";
+    public static final String CLOCK_DETAIL_FRAGMENT = "clock_detail_fragment";
+    public String nowPage = ALL_FRAGMENT;
+
+    private void goPage(String page) {
+        nowPage = page;
+        Logger.v("跳转页面到->" + page);
+        switch (page) {
+            case ALL_FRAGMENT:
+                rightBtn.setVisibility(View.GONE);
+                mResideLayout.closePane();
+                mIcon.setImageDrawable(new IconicsDrawable(this).color(Color.WHITE).icon(MaterialDesignIconic.Icon.gmi_view_comfy).sizeDp((int) TOOL_BAR_ICON_SIZE));
+                mTitle.setText(R.string.app_name);
+                currentFragment = MyViewUtils.switchFragment(this, currentFragment, new AllFragment());
+                break;
+
+            case CLOCK_FRAGMENT:
+                rightBtn.setVisibility(View.VISIBLE);
+                mResideLayout.closePane();
+                mIcon.setImageDrawable(new IconicsDrawable(this).color(Color.WHITE).icon(MaterialDesignIconic.Icon.gmi_map).sizeDp((int) TOOL_BAR_ICON_SIZE));
+                mTitle.setText(R.string.clock);
+                currentFragment = MyViewUtils.switchFragment(this, currentFragment, new ClockFragment());
+                break;
+            case CLOCK_DETAIL_FRAGMENT:
+                rightBtn.setVisibility(View.GONE);
+                mResideLayout.closePane();
+                mIcon.setImageDrawable(new IconicsDrawable(this).color(Color.WHITE).icon(MaterialDesignIconic.Icon.gmi_arrow_back).sizeDp((int) TOOL_BAR_ICON_SIZE));
+                mTitle.setText(R.string.clock_detail);
+                currentFragment = MyViewUtils.switchFragment(this, currentFragment, new ClockDetailsFragment());
+                break;
+        }
+
+
+    }
+
+
+    @Subscribe
+    public void onEvent(SwitchFragmentEvent event) {
+        goPage(event.getFragment());
+    }
+
+    @Subscribe
+    public void onEvent(CanSlideEvent event) {
+        mResideLayout.setChildWantMove(event.getB());
     }
 
     @Override
@@ -325,7 +386,6 @@ public class MainActivity extends BaseActivity implements ColorChooserDialog.Col
         if (selectedColor == ThemeUtils.getThemeColor(this, R.attr.colorPrimary)) {
             return;
         }
-        EventBus.getDefault().post(new SkinChangeEvent());
 
         if (selectedColor == getResources().getColor(R.color.colorBluePrimary)) {
             setTheme(R.style.BlueTheme);
@@ -424,13 +484,9 @@ public class MainActivity extends BaseActivity implements ColorChooserDialog.Col
                 }
             }).start();
         }
+        EventBus.getDefault().post(new SkinChangeEvent());
     }
 
-
-    @Subscribe
-    public void onEvent(CanSlideEvent event) {
-        mResideLayout.setChildWantMove(event.getB());
-    }
 
     @Override
     public void onBackPressed() {
@@ -445,7 +501,12 @@ public class MainActivity extends BaseActivity implements ColorChooserDialog.Col
             if (mResideLayout.isOpen()) {
                 mResideLayout.closePane();
             } else {
-                exitBy2Click(); //调用双击退出函数
+                if (mainCallBack != null) {
+                    mainCallBack.onBackPressed();
+                } else {
+                    exitBy2Click(); //调用双击退出函数
+                }
+
             }
 
         }

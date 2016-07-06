@@ -7,15 +7,22 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
+import com.mikepenz.iconics.IconicsDrawable;
+import com.mikepenz.material_design_iconic_typeface_library.MaterialDesignIconic;
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import me.xiaopan.android.content.res.DimenUtils;
 import me.xiaopan.java.util.DateTimeUtils;
 import www.ufcus.com.R;
 import www.ufcus.com.beans.ClockBean;
+import www.ufcus.com.utils.MyViewUtils;
+import www.ufcus.com.utils.ThemeUtils;
 import www.ufcus.com.utils.Utils;
 
 /**
@@ -69,9 +76,15 @@ public class ClockAdapter extends ArrayAdapter<ClockBean> {
         viewHolder.phoneNumber = bean.getPhoneNumber();
         long clockTime = bean.getClockTime();
         String clockDateStr = bean.getGroupBy();
-        String clockTimeStr =Utils.getTime(clockTime);
+        String clockTimeStr = "打卡时间:" + Utils.getTime(clockTime);
         viewHolder.clockDate.setText(clockDateStr);
         viewHolder.clockTime.setText(clockTimeStr);
+        viewHolder.imageView.setCompoundDrawablesWithIntrinsicBounds(new IconicsDrawable(context)
+                        .icon(MaterialDesignIconic.Icon.gmi_time_countdown)
+                        .color(ThemeUtils.getThemeColor(context, R.attr.colorPrimary))
+                        .sizeDp(20),
+                null, null, null);
+        viewHolder.imageView.setCompoundDrawablePadding(DimenUtils.dp2px(context, 5));
         return convertView;
     }
 
@@ -80,6 +93,8 @@ public class ClockAdapter extends ArrayAdapter<ClockBean> {
         TextView clockDate;
         @BindView(R.id.clock_time)
         TextView clockTime;
+        @BindView(R.id.clock_r_img)
+        TextView imageView;
         String phoneNumber;
 
         ViewHolder(View view) {

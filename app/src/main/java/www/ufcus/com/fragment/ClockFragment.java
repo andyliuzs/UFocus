@@ -1,13 +1,13 @@
 package www.ufcus.com.fragment;
 
 
-import android.content.ContentProvider;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.ContentObserver;
 import android.database.Cursor;
 import android.graphics.Color;
+import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -17,7 +17,6 @@ import android.support.v4.content.Loader;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -39,7 +38,6 @@ import com.orhanobut.logger.Logger;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
-import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -47,25 +45,24 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import butterknife.OnClick;
 import butterknife.OnLongClick;
-import me.xiaopan.java.util.DateTimeUtils;
+import me.xiaopan.android.content.res.DimenUtils;
 import www.ufcus.com.R;
-import www.ufcus.com.activity.MainActivity;
 import www.ufcus.com.adapter.ClockAdapter;
 import www.ufcus.com.beans.ClockBean;
 import www.ufcus.com.event.CanSlideEvent;
 import www.ufcus.com.event.SkinChangeEvent;
 import www.ufcus.com.utils.MyMapUtils;
-import www.ufcus.com.utils.MyViewUtils;
 import www.ufcus.com.utils.PreUtils;
+import www.ufcus.com.utils.ThemeUtils;
 import www.ufcus.com.utils.Utils;
 import www.ufcus.com.utils.WifiOpenHelper;
+import www.ufcus.com.widget.WaveRipView;
 
 /**
  * A simple {@link Fragment} subclass.
  */
-public class MapFragment extends Fragment implements LoaderManager.LoaderCallbacks<ArrayList<ClockBean>> {
+public class ClockFragment extends Fragment implements LoaderManager.LoaderCallbacks<ArrayList<ClockBean>> {
     protected View rootView;
     // 定位相关
     LocationClient mLocationClient;
@@ -85,15 +82,17 @@ public class MapFragment extends Fragment implements LoaderManager.LoaderCallbac
     @BindView(R.id.list)
     ListView mList;
     @BindView(R.id.tv_clock)
-    TextView tvClock;
-    @BindView(R.id.tv_clock_details)
-    TextView tvClockDetails;
-
+    WaveRipView tvClock;
+    @BindView(R.id.ll_btn)
+    View btnParent;
+    @BindView(R.id.rl_map)
+    View mapParent;
     boolean isFirstLoc = true; // 是否首次定位
     WifiOpenHelper wifiOpenHelper;
     boolean isInRadius = false;
     private List<ClockBean> clocks = new ArrayList<>();
     private ClockAdapter clockAdapter;
+
 
     protected int getLayoutResource() {
         return R.layout.fragment_map;
@@ -127,6 +126,7 @@ public class MapFragment extends Fragment implements LoaderManager.LoaderCallbac
         clockAdapter = new ClockAdapter(getActivity(), clocks);
         mList.setAdapter(clockAdapter);
         initData();
+        setViewColor();
         return rootView;
     }
 
@@ -153,7 +153,7 @@ public class MapFragment extends Fragment implements LoaderManager.LoaderCallbac
         mBaiduMap = mMapView.getMap();
         // 开启定位图层
         mBaiduMap.setMyLocationEnabled(true);
-        MyMapUtils.addArea(getActivity(), mBaiduMap);
+//        MyMapUtils.addArea(getActivity(), mBaiduMap);
         // 定位初始化
         mLocationClient = new LocationClient(getActivity());
         mLocationClient.registerLocationListener(myListener);
@@ -198,9 +198,17 @@ public class MapFragment extends Fragment implements LoaderManager.LoaderCallbac
     @Subscribe
     public void onEvent(SkinChangeEvent event) {
         Logger.v("收到主题切换了");
-        mMapView.getMap().clear();
-        MyMapUtils.addArea(getActivity(), mBaiduMap);
+        clockAdapter.notifyDataSetChanged();
+        setViewColor();
+    }
 
+    private void setViewColor() {
+        mMapView.getMap().clear();
+//        MyMapUtils.addArea(getActivity(), mBaiduMap);
+        tvClock.refreshDrawableState();
+        btnParent.setBackgroundColor(ThemeUtils.getThemeColor(getActivity(), R.attr.colorPrimary));
+        GradientDrawable background = (GradientDrawable) mapParent.getBackground();
+        background.setStroke(DimenUtils.dp2px(getActivity(), 3), ThemeUtils.getThemeColor(getActivity(), R.attr.colorPrimary));
     }
 
     @OnLongClick({R.id.tv_clock})
@@ -216,14 +224,6 @@ public class MapFragment extends Fragment implements LoaderManager.LoaderCallbac
         return true;
     }
 
-    @OnClick({R.id.tv_clock_details})
-    public void onClick(View view) {
-        switch (view.getId()) {
-            case R.id.tv_clock_details:
-                MyViewUtils.switchFragment(((MainActivity) getActivity()), ((MainActivity) getActivity()).getCurrentFragment(), new ClockDetailsFragment());
-                break;
-        }
-    }
 
     public class MyLocationListener implements BDLocationListener {
 
@@ -233,16 +233,15 @@ public class MapFragment extends Fragment implements LoaderManager.LoaderCallbac
             if (location == null || mMapView == null) {
                 return;
             }
-//            MyMapUtils.printReceiveLocation(location);
-            isInRadius = MyMapUtils.isPolygonContainPoint(location.getLatitude(), location.getLongitude());
-//            String inResult = (isInRadius ? "您在办公区域内" : "您不在办公区域内");
-//            Logger.v("您的位置是否在区域内呢？\n" + inResult);
+            MyMapUtils.printReceiveLocation(location);
+//            isInRadius = MyMapUtils.isPolygonContainPoint(location.getLatitude(), location.getLongitude());
+            isInRadius = MyMapUtils.isNear(location.getLatitude(), location.getLongitude());
             if (isInRadius) {
-                mStatus.setText("您在办公区域");
+                mStatus.setText("您在办公区域附近");
                 mStatus.setBackgroundColor(getResources().getColor(R.color.colorGreenPrimary));
                 mStatus.setTextColor(Color.WHITE);
             } else {
-                mStatus.setText("您不在办公区域");
+                mStatus.setText("您不在办公区域附近");
                 mStatus.setBackgroundColor(getResources().getColor(R.color.colorRedPrimary));
                 mStatus.setTextColor(Color.WHITE);
             }
@@ -270,7 +269,7 @@ public class MapFragment extends Fragment implements LoaderManager.LoaderCallbac
         @Override
         public void onChange(boolean selfChange) {
             super.onChange(selfChange);
-            getLoaderManager().restartLoader(0, null, MapFragment.this);
+            getLoaderManager().restartLoader(0, null, ClockFragment.this);
             //监听到签到数据变化
         }
     };

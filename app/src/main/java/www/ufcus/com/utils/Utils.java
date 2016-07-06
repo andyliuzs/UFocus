@@ -40,7 +40,7 @@ public class Utils {
         int second = DateTimeUtils.getSecond(dateTime);
         String secondStr = getNumberDigit(second) == 1 ? "0" + second : String.valueOf(second);
 
-        return "打卡时间:" + hourStr + ":" + minuteStr + ":" + secondStr;
+        return   hourStr + ":" + minuteStr + ":" + secondStr;
     }
 
     /**

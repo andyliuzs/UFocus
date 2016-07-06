@@ -1,11 +1,15 @@
 package www.ufcus.com.adapter;
 
 import android.content.Context;
+import android.os.Build;
+import android.support.v4.content.ContextCompat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
+
+import com.mikepenz.material_design_iconic_typeface_library.MaterialDesignIconic;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,6 +18,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import www.ufcus.com.R;
 import www.ufcus.com.beans.ClockDetailResult;
+import www.ufcus.com.utils.MyViewUtils;
 import www.ufcus.com.utils.Utils;
 
 /**
@@ -70,7 +75,14 @@ public class ClockDetailsAdapter extends ArrayAdapter<ClockDetailResult> {
         viewHolder.lastClockTime.setText(bean.getLastTime());
         viewHolder.workTime.setText(bean.getWorkTime());
         viewHolder.workStatus.setText(bean.getWorkStatus());
+        if (bean.getWorkStatus().equals("异常")) {
+            viewHolder.workStatus.setTextColor(ContextCompat.getColor(context, R.color.colorRedPrimary));
 
+        }else{
+            viewHolder.workStatus.setTextColor(ContextCompat.getColor(context, R.color.colorGreenPrimary));
+        }
+        MyViewUtils.setIconDrawable(context, viewHolder.firstClockTime, MaterialDesignIconic.Icon.gmi_time);
+        MyViewUtils.setIconDrawable(context, viewHolder.lastClockTime, MaterialDesignIconic.Icon.gmi_time);
         return convertView;
     }
 

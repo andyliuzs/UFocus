@@ -1,6 +1,7 @@
 package www.ufcus.com.utils;
 
 import android.content.Context;
+import android.text.TextUtils;
 
 import com.baidu.location.BDLocation;
 import com.baidu.location.Poi;
@@ -9,8 +10,7 @@ import com.baidu.mapapi.map.OverlayOptions;
 import com.baidu.mapapi.map.PolygonOptions;
 import com.baidu.mapapi.map.Stroke;
 import com.baidu.mapapi.model.LatLng;
-import com.baidu.mapapi.model.inner.GeoPoint;
-import com.baidu.mapapi.model.inner.Point;
+import com.baidu.mapapi.utils.DistanceUtil;
 import com.orhanobut.logger.Logger;
 
 import org.json.JSONException;
@@ -19,8 +19,8 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
-import me.xiaopan.java.util.GeometryUtils;
 import www.ufcus.com.R;
+import www.ufcus.com.app.App;
 
 /**
  * Created by andyliu on 16-7-1.
@@ -99,7 +99,8 @@ public class MyMapUtils {
             if (list != null) {
                 json.put("poilist_size", list.size());
                 for (Poi p : list) {
-                    json.put("poi", p.getId() + " " + p.getName() + " " + p.getRank());
+                    int i = 0;
+                    json.put("poi" + (++i), p.getId() + " " + p.getName() + " " + p.getRank());
                 }
             }
         } catch (JSONException e) {
@@ -162,6 +163,39 @@ public class MyMapUtils {
         return nCross % 2 == 1;
     }
 
+
+    /***
+     * 距离目标点近(米);
+     *
+     * @param latitude
+     * @param longitude
+     * @return
+     */
+    public static boolean isNear(double latitude, double longitude) {
+        String jwStr = PreUtils.getString(App.getInstance(), "j_w", "");
+        if (TextUtils.isEmpty(jwStr)) {
+            return false;
+        } else {
+
+            String[] jw = jwStr.split(",");
+            double t_latitude, t_longitude;
+            t_longitude = Double.valueOf(jw[0]);
+            t_latitude = Double.valueOf(jw[1]);
+            LatLng target = new LatLng(t_latitude, t_longitude);
+            LatLng me = new LatLng(latitude, longitude);
+            double distance = DistanceUtil.getDistance(target, me);
+            Logger.v("target t_lati" + t_latitude + ",t_longti" + t_longitude + "-me lati" + latitude + ",longti" + longitude + "相距" + distance);
+            if (distance == -1) return false;
+
+            int localDistance = PreUtils.getInt(App.getInstance(), "distance", 200);
+
+            if (distance <= localDistance) {
+                return true;
+            }
+
+            return false;
+        }
+    }
 
     /***
      * 添加多边形区域
