@@ -4,14 +4,14 @@ package www.ufcus.com.utils;
  * Created by andyliu on 16-7-4.
  */
 
-import java.util.List;
-
 import android.content.Context;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.net.wifi.WifiManager.WifiLock;
+
+import java.util.List;
 
 /**
  * create by lzs
@@ -200,7 +200,7 @@ public class WifiOpenHelper {
      * @return
      */
     public boolean checkIsConnected(String ssid) {
-        if (getSSID().toLowerCase().equals("office")) {
+        if (getSSID().toLowerCase().equals(ssid)) {
             return true;
         } else {
             return false;

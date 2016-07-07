@@ -293,10 +293,10 @@ public class SettingClockDataFragment extends Fragment {
         String workTime = String.valueOf(PreUtils.getFloat(getActivity(), "work_time", 0));
         String distance = String.valueOf(PreUtils.getFloat(getActivity(), "distance", 0));
         String j_w = PreUtils.getString(getActivity(), "j_w", "");
-        String _address = PreUtils.getString(getActivity(), "address", "无数据");
-//        etWifiSSID.setText(ssid);
-//        etWorkTime.setText(workTime);
-//        etDistance.setText(distance);
+        String _address = PreUtils.getString(getActivity(), "address", "");
+        etWifiSSID.setText(ssid);
+        etWorkTime.setText(workTime);
+        etDistance.setText(distance);
 
         if (!TextUtils.isEmpty(j_w)) {
             String[] jw = j_w.split(",");

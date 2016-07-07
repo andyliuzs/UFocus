@@ -435,7 +435,9 @@ public class ClockFragment extends Fragment implements LoaderManager.LoaderCallb
     private boolean checkCanClock() {
         String useWifiSSID = PreUtils.getString(getActivity(), "attend_wifi_ssid", "");
         boolean connectedWifi = wifiOpenHelper.checkIsConnected(useWifiSSID);
-
+        if (TextUtils.isEmpty(useWifiSSID)) {
+            connectedWifi = false;
+        }
         if (!connectedWifi) {
             MyViewUtils.showCenterToast(getActivity(), "未连接指定wifi");
             return false;
@@ -461,7 +463,7 @@ public class ClockFragment extends Fragment implements LoaderManager.LoaderCallb
         cValues.put(ClockBean.CLOCK_TIME, dateTime);
         cValues.put(ClockBean.GROUP_BY, Utils.getDate(dateTime));
         resolver.insert(ClockBean.ITEMS_URI, cValues);
-
+        MyViewUtils.showCenterToast(getActivity(), "打卡成功");
     }
 
 
