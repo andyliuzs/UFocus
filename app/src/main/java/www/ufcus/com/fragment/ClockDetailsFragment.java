@@ -45,6 +45,7 @@ public class ClockDetailsFragment extends BaseFragment implements OnRefreshListe
 
     private static int page = 1;
     private boolean isRefresh = true;
+    private boolean firstIn = true;
 
     @Override
     protected int getLayoutResource() {
@@ -69,7 +70,13 @@ public class ClockDetailsFragment extends BaseFragment implements OnRefreshListe
 
     private void getData(final boolean isRefresh) {
         this.isRefresh = isRefresh;
-        getLoaderManager().restartLoader(0, null, this);
+        if (firstIn) {
+            firstIn = false;
+            getLoaderManager().initLoader(0, null, this);
+        } else {
+            getLoaderManager().restartLoader(0, null, this);
+        }
+
 
     }
 

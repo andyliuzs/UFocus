@@ -2,7 +2,6 @@ package www.ufcus.com.fragment;
 
 
 import android.os.Bundle;
-import android.support.annotation.FloatRange;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.text.TextUtils;
@@ -19,22 +18,16 @@ import com.baidu.location.LocationClient;
 import com.baidu.location.LocationClientOption;
 import com.baidu.mapapi.SDKInitializer;
 import com.baidu.mapapi.map.BaiduMap;
-import com.baidu.mapapi.map.BitmapDescriptor;
-import com.baidu.mapapi.map.BitmapDescriptorFactory;
-import com.baidu.mapapi.map.InfoWindow;
 import com.baidu.mapapi.map.MapPoi;
 import com.baidu.mapapi.map.MapStatus;
 import com.baidu.mapapi.map.MapStatusUpdateFactory;
 import com.baidu.mapapi.map.MapView;
 import com.baidu.mapapi.map.Marker;
-import com.baidu.mapapi.map.MarkerOptions;
 import com.baidu.mapapi.map.MyLocationConfiguration;
 import com.baidu.mapapi.map.MyLocationData;
 import com.baidu.mapapi.model.LatLng;
 import com.baidu.mapapi.search.geocode.GeoCodeResult;
-import com.baidu.mapapi.search.geocode.GeoCoder;
 import com.baidu.mapapi.search.geocode.OnGetGeoCoderResultListener;
-import com.baidu.mapapi.search.geocode.ReverseGeoCodeOption;
 import com.baidu.mapapi.search.geocode.ReverseGeoCodeResult;
 import com.orhanobut.logger.Logger;
 
@@ -44,27 +37,27 @@ import org.greenrobot.eventbus.Subscribe;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
-import butterknife.OnFocusChange;
-import butterknife.OnLongClick;
 import www.ufcus.com.R;
+import www.ufcus.com.activity.MainActivity;
 import www.ufcus.com.event.CanSlideEvent;
 import www.ufcus.com.event.SkinChangeEvent;
 import www.ufcus.com.utils.MyMapUtils;
 import www.ufcus.com.utils.PreUtils;
+import www.ufcus.com.utils.ThemeUtils;
 import www.ufcus.com.utils.Utils;
 
 /**
  * A simple {@link Fragment} subclass.
  */
 public class SettingClockDataFragment extends Fragment {
+
+
     protected View rootView;
     // 定位相关
     LocationClient mLocationClient;
     public MyLocationListener myListener = new MyLocationListener();
     private MyLocationConfiguration.LocationMode mCurrentMode;
-    BitmapDescriptor mCurrentMarker;
-    private static final int accuracyCircleFillColor = 0xAAFFFF88;
-    private static final int accuracyCircleStrokeColor = 0xAA00FF00;
+
 
     @BindView(R.id.bmapView)
     MapView mMapView;
@@ -76,13 +69,20 @@ public class SettingClockDataFragment extends Fragment {
     EditText etWifiSSID;
     @BindView(R.id.et_work_time)
     EditText etWorkTime;
+    @BindView(R.id.ll_edit)
+    View model_edit;
+    @BindView(R.id.ll_map)
+    View model_map;
+    @BindView(R.id.tv_other_setting)
+    View otherSettingBtn;
 
+    @BindView(R.id.tv_setting_detail)
+    TextView settingDetails;
     // UI相关
     boolean isFirstLoc = true; // 是否首次定位
-    private BitmapDescriptor bitmap;
+
     private String address = "";
-    double latitude, longitude;
-    private InfoWindow mInfoWindow;
+
 
     protected int getLayoutResource() {
         return R.layout.fragment_setting_clock_data;
@@ -139,8 +139,7 @@ public class SettingClockDataFragment extends Fragment {
         mLocationClient = new LocationClient(getActivity());
         mLocationClient.registerLocationListener(myListener);
 
-        // 设置marker图标
-        bitmap = BitmapDescriptorFactory.fromResource(R.drawable.maker);
+
         mBaiduMap.setOnMapClickListener(new BaiduMap.OnMapClickListener() {
 
             @Override
@@ -152,7 +151,19 @@ public class SettingClockDataFragment extends Fragment {
             //此方法就是点击地图监听
             @Override
             public void onMapClick(LatLng latLng) {
-                mark(latLng);
+                MyMapUtils.maker(mBaiduMap, latLng, new OnGetGeoCoderResultListener() {
+                    @Override
+                    public void onGetGeoCodeResult(GeoCodeResult geoCodeResult) {
+
+                    }
+
+                    @Override
+                    public void onGetReverseGeoCodeResult(ReverseGeoCodeResult reverseGeoCodeResult) {
+                        //获取点击的坐标地址
+                        address = reverseGeoCodeResult.getAddress();
+                        Logger.v("您点击的地址为" + reverseGeoCodeResult.getAddress());
+                    }
+                });
 
             }
         });
@@ -160,82 +171,16 @@ public class SettingClockDataFragment extends Fragment {
         mBaiduMap.setOnMarkerClickListener(new BaiduMap.OnMarkerClickListener() {
             @Override
             public boolean onMarkerClick(Marker marker) {
-                showLocation(marker);
+                MyMapUtils.showLocation(getActivity(), mBaiduMap, marker, address, new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        initData();
+                    }
+                });
                 return false;
             }
         });
         initLocation();
-
-    }
-
-    /**
-     * 做标记
-     *
-     * @param latLng
-     */
-    private void mark(LatLng latLng) {
-        //获取经纬度
-        double latitude = latLng.latitude;
-        double longitude = latLng.longitude;
-        Logger.v("latitude=" + latitude + ",longitude=" + longitude);
-        //先清除图层
-        mBaiduMap.clear();
-        // 定义Maker坐标点
-        LatLng point = new LatLng(latitude, longitude);
-        // 构建MarkerOption，用于在地图上添加Marker
-        MarkerOptions options = new MarkerOptions().position(point)
-                .icon(bitmap);
-        // 在地图上添加Marker，并显示
-        mBaiduMap.addOverlay(options);
-        //实例化一个地理编码查询对象
-        GeoCoder geoCoder = GeoCoder.newInstance();
-        //设置反地理编码位置坐标
-        ReverseGeoCodeOption op = new ReverseGeoCodeOption();
-        op.location(latLng);
-        //发起反地理编码请求(经纬度->地址信息)
-        geoCoder.reverseGeoCode(op);
-        geoCoder.setOnGetGeoCodeResultListener(new OnGetGeoCoderResultListener() {
-
-            @Override
-            public void onGetReverseGeoCodeResult(ReverseGeoCodeResult arg0) {
-                //获取点击的坐标地址
-                address = arg0.getAddress();
-                Logger.v("您点击的地址为" + address);
-            }
-
-            @Override
-            public void onGetGeoCodeResult(GeoCodeResult arg0) {
-            }
-        });
-    }
-
-    private void showLocation(final Marker marker) {  //显示气泡
-        // 创建InfoWindow展示的view
-
-        LatLng pt = null;
-
-        latitude = marker.getPosition().latitude;
-        longitude = marker.getPosition().longitude;
-
-        View view = LayoutInflater.from(getActivity()).inflate(R.layout.show_map_position_item, null); //自定义气泡形状
-        TextView tvTitle = (TextView) view.findViewById(R.id.area);
-        TextView tvPosition = (TextView) view.findViewById(R.id.position);
-        pt = new LatLng(latitude + 0.0004, longitude + 0.00005);
-        tvTitle.setText(TextUtils.isEmpty(address) ? "无数据" : address);
-        tvPosition.setText(String.format("la:%.5f,lo:%.5f", latitude, longitude));
-
-        // 定义用于显示该InfoWindow的坐标点
-        // 创建InfoWindow的点击事件监听者
-//        InfoWindow.OnInfoWindowClickListener listener = new InfoWindow.OnInfoWindowClickListener() {
-//            public void onInfoWindowClick() {
-//                mBaiduMap.hideInfoWindow();//影藏气泡
-//
-//            }
-//        };
-        // 创建InfoWindow
-//        mInfoWindow = new InfoWindow(view, pt, listener);
-        mInfoWindow = new InfoWindow(view, pt, 1);
-        mBaiduMap.showInfoWindow(mInfoWindow); //显示气泡
 
     }
 
@@ -280,10 +225,11 @@ public class SettingClockDataFragment extends Fragment {
     }
 
     private void setViewColor() {
-
+        model_edit.setBackgroundColor(ThemeUtils.getThemeColor(getActivity(), R.attr.colorPrimary));
+        otherSettingBtn.setBackgroundColor(ThemeUtils.getThemeColor(getActivity(), R.attr.colorPrimary));
     }
 
-    @OnClick({R.id.tv_ok})
+    @OnClick({R.id.tv_ok, R.id.tv_cancel, R.id.tv_other_setting})
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.tv_ok:
@@ -300,6 +246,29 @@ public class SettingClockDataFragment extends Fragment {
                     return;
                 }
                 saveData();
+                initData();
+                break;
+            case R.id.tv_cancel:
+                changeView(R.id.ll_map);
+                break;
+            case R.id.tv_other_setting:
+                changeView(R.id.ll_edit);
+                break;
+        }
+    }
+
+    public void changeView(int id) {
+        switch (id) {
+            case R.id.ll_map:
+                ((MainActivity) getActivity()).nowSettingView = MainActivity.SETTING_CLOCK_MAP_VIEW;
+                model_edit.setVisibility(View.GONE);
+                model_map.setVisibility(View.VISIBLE);
+                break;
+
+            case R.id.ll_edit:
+                ((MainActivity) getActivity()).nowSettingView = MainActivity.SETTING_CLOCK_SETTING_VIEW;
+                model_edit.setVisibility(View.VISIBLE);
+                model_map.setVisibility(View.GONE);
                 break;
         }
     }
@@ -307,25 +276,50 @@ public class SettingClockDataFragment extends Fragment {
     private void saveData() {
         PreUtils.putString(getActivity(), "attend_wifi_ssid", etWifiSSID.getText().toString());
         PreUtils.putFloat(getActivity(), "work_time", Float.valueOf(etWorkTime.getText().toString()));
-        PreUtils.putString(getActivity(), "j_w", longitude + "," + latitude);
         PreUtils.putFloat(getActivity(), "distance", Float.valueOf(etDistance.getText().toString()));
-        Toast.makeText(getActivity(), "数据存储成功！", Toast.LENGTH_SHORT).show();
+        Toast.makeText(getActivity(), "数据设定成功！", Toast.LENGTH_SHORT).show();
     }
 
 
     private void initData() {
-        etWifiSSID.setText(PreUtils.getString(getActivity(), "attend_wifi_ssid", ""));
-        etWorkTime.setText(String.valueOf(PreUtils.getFloat(getActivity(), "work_time", Float.valueOf(etWorkTime.getText().toString()))));
-        etDistance.setText(String.valueOf(PreUtils.getFloat(getActivity(), "distance", Float.valueOf(etDistance.getText().toString()))));
+//        Bundle bundle = getArguments();
+//        String showView = bundle.getString("view", MainActivity.SETTING_CLOCK_MAP_VIEW);
+//        if (showView.equals(MainActivity.SETTING_CLOCK_SETTING_VIEW)) {
+//            changeView(R.id.ll_edit);
+//        } else {
+//            changeView(R.id.ll_map);
+//        }
+        String ssid = PreUtils.getString(getActivity(), "attend_wifi_ssid", "");
+        String workTime = String.valueOf(PreUtils.getFloat(getActivity(), "work_time", 0));
+        String distance = String.valueOf(PreUtils.getFloat(getActivity(), "distance", 0));
         String j_w = PreUtils.getString(getActivity(), "j_w", "");
+        String _address = PreUtils.getString(getActivity(), "address", "无数据");
+//        etWifiSSID.setText(ssid);
+//        etWorkTime.setText(workTime);
+//        etDistance.setText(distance);
+
         if (!TextUtils.isEmpty(j_w)) {
             String[] jw = j_w.split(",");
             double t_latitude, t_longitude;
             t_longitude = Double.valueOf(jw[0]);
             t_latitude = Double.valueOf(jw[1]);
             LatLng target = new LatLng(t_latitude, t_longitude);
-            mark(target);
+            MyMapUtils.maker(mBaiduMap, target, new OnGetGeoCoderResultListener() {
+                @Override
+                public void onGetGeoCodeResult(GeoCodeResult geoCodeResult) {
+
+                }
+
+                @Override
+                public void onGetReverseGeoCodeResult(ReverseGeoCodeResult reverseGeoCodeResult) {
+                    //获取点击的坐标地址
+                    address = reverseGeoCodeResult.getAddress();
+                    Logger.v("您点击的地址为" + reverseGeoCodeResult.getAddress());
+                }
+            });
         }
+        String settingDetail = "WIFI:" + ssid + "\n工作时间:" + workTime + "\n打卡距离:" + distance + "\n地点:" + _address + "\n" + "坐标:" + j_w;
+        settingDetails.setText(settingDetail);
     }
 
     public class MyLocationListener implements BDLocationListener {
@@ -340,7 +334,7 @@ public class SettingClockDataFragment extends Fragment {
 //            isInRadius = MyMapUtils.isPolygonContainPoint(location.getLatitude(), location.getLongitude());
             MyLocationData locData = new MyLocationData.Builder()
                     .accuracy(location.getRadius())
-                    // 此处设置开发者获取到的方向信息，顺时针0-360
+                            // 此处设置开发者获取到的方向信息，顺时针0-360
                     .direction(100).latitude(location.getLatitude())
                     .longitude(location.getLongitude()).build();
             mBaiduMap.setMyLocationData(locData);

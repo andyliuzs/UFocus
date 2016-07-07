@@ -41,6 +41,7 @@ import me.xiaopan.android.preference.PreferencesUtils;
 import www.ufcus.com.R;
 import www.ufcus.com.activity.base.BaseActivity;
 import www.ufcus.com.beans.Aitem;
+import www.ufcus.com.dialog.ActionSheetDialog;
 import www.ufcus.com.event.CanSlideEvent;
 import www.ufcus.com.event.SkinChangeEvent;
 import www.ufcus.com.event.SwitchFragmentEvent;
@@ -154,14 +155,14 @@ public class MainActivity extends BaseActivity implements ColorChooserDialog.Col
         Glide.with(this)
                 .load(R.drawable.head_img)
                 .placeholder(new IconicsDrawable(this)
-                        .icon(FoundationIcons.Icon.fou_photo)
-                        .color(Color.GRAY)
-                        .backgroundColor(Color.WHITE)
-                        .roundedCornersDp(40)
-                        .paddingDp(15)
+                                .icon(FoundationIcons.Icon.fou_photo)
+                                .color(Color.GRAY)
+                                .backgroundColor(Color.WHITE)
+                                .roundedCornersDp(40)
+                                .paddingDp(15)
 
                 )
-                //圆形
+                        //圆形
                 .bitmapTransform(new CropCircleTransformation(this))
                 .dontAnimate()
                 .into(headImg);
@@ -180,7 +181,7 @@ public class MainActivity extends BaseActivity implements ColorChooserDialog.Col
             public void onSuccess(List<Aitem> result) {
                 Glide.with(MainActivity.this)
                         .load(result.get(0).getUrl())
-                        //设置占位图
+                                //设置占位图
                         .placeholder(new IconicsDrawable(MainActivity.this)
                                 .icon(FoundationIcons.Icon.fou_photo)
                                 .color(Color.GRAY)
@@ -203,22 +204,7 @@ public class MainActivity extends BaseActivity implements ColorChooserDialog.Col
 //                .icon(MaterialDesignIconic.Icon.gmi_view_comfy).sizeDp((int) TOOL_BAR_ICON_SIZE));
 //        mTitle.setText(R.string.app_name);
 //        MyViewUtils.switchFragment(this, currentFragment, new AllFragment());
-        goPage(ALL_FRAGMENT);
-        testData();
-    }
-
-    /**
-     * 测试数据,如果有服务端可删除本方法
-     */
-    private void testData() {
-
-        PreUtils.putString(this, "phone_number", "18301214392");
-        PreUtils.putString(this, "attend_wifi_ssid", "office");
-        PreUtils.putFloat(this, "work_time", 8);
-        //办公区域经纬度 默认用友软件园
-        PreUtils.putString(this, "j_w", "116.240794,40.072816");
-        //距离目标点有效距离默认300米
-        PreUtils.putFloat(this, "distance", 200);
+        goPage(ALL_FRAGMENT, null);
     }
 
 
@@ -226,24 +212,25 @@ public class MainActivity extends BaseActivity implements ColorChooserDialog.Col
             R.id.resource, R.id.about,
             R.id.app, R.id.theme, R.id.icon, R.id.more, R.id.rightBtn})
     public void onClick(View view) {
+
         switch (view.getId()) {
             case R.id.headImg:
                 MyViewUtils.showCenterToast(this, "再点吃掉你丫的");
                 break;
             case R.id.all:
-                goPage(ALL_FRAGMENT);
+                goPage(ALL_FRAGMENT, null);
                 break;
             case R.id.clock:
-                goPage(CLOCK_FRAGMENT);
+                goPage(CLOCK_FRAGMENT, null);
                 break;
             case R.id.fuli:
-                goPage(SETTING_CLOCK_DATA_FRAGMENT);
 //                mResideLayout.closePane();
 //                mIcon.setImageDrawable(new IconicsDrawable(this).color(Color.WHITE).icon(MaterialDesignIconic.Icon.gmi_mood).sizeDp((int) TOOL_BAR_ICON_SIZE));
 //                mTitle.setText(R.string.fuli);
 //                switchFragment(new FuLiFragment());
                 break;
             case R.id.android:
+
 //                mResideLayout.closePane();
 //                mIcon.setImageDrawable(new IconicsDrawable(this).color(Color.WHITE).icon(MaterialDesignIconic.Icon.gmi_android).sizeDp((int) TOOL_BAR_ICON_SIZE));
 //                mTitle.setText(R.string.android);
@@ -316,9 +303,19 @@ public class MainActivity extends BaseActivity implements ColorChooserDialog.Col
 
                 switch (nowPage) {
                     case CLOCK_DETAIL_FRAGMENT:
-                        goPage(CLOCK_FRAGMENT);
+                        goPage(CLOCK_FRAGMENT, null);
                         break;
+                    case SETTING_CLOCK_DATA_FRAGMENT:
+                        if (nowSettingView.equals(SETTING_CLOCK_SETTING_VIEW)) {
+//                            Bundle bundle = new Bundle();
+//                            bundle.putString("view", SETTING_CLOCK_MAP_VIEW);
+//                            goPage(SETTING_CLOCK_DATA_FRAGMENT, bundle);
+                            ((SettingClockDataFragment) currentFragment).changeView(R.id.ll_map);
+                        } else {
+                            goPage(CLOCK_FRAGMENT, null);
+                        }
 
+                        break;
                     default:
                         mResideLayout.openPane();
 
@@ -326,15 +323,11 @@ public class MainActivity extends BaseActivity implements ColorChooserDialog.Col
                 break;
 
             case R.id.rightBtn:
-                switch (nowPage) {
-                    case CLOCK_FRAGMENT:
-                        goPage(CLOCK_DETAIL_FRAGMENT);
-                        break;
-
-                }
+                showPopDialog();
                 break;
         }
     }
+
 
     public static final String ALL_FRAGMENT = "all_fragment";
     public static final String CLOCK_FRAGMENT = "clock_fragment";
@@ -342,7 +335,12 @@ public class MainActivity extends BaseActivity implements ColorChooserDialog.Col
     public static final String SETTING_CLOCK_DATA_FRAGMENT = "setting_clock_data_fragment";
     public String nowPage = ALL_FRAGMENT;
 
-    private void goPage(String page) {
+    //SETTING_CLOCK_DATA_FRAGMENT
+    public static final String SETTING_CLOCK_MAP_VIEW = "setting_clock_map_view";
+    public static final String SETTING_CLOCK_SETTING_VIEW = "setting_clock_setting_view";
+    public String nowSettingView = SETTING_CLOCK_MAP_VIEW;
+
+    private void goPage(String page, Bundle b) {
         nowPage = page;
         Logger.v("跳转页面到->" + page);
         switch (page) {
@@ -364,16 +362,16 @@ public class MainActivity extends BaseActivity implements ColorChooserDialog.Col
             case CLOCK_DETAIL_FRAGMENT:
                 rightBtn.setVisibility(View.GONE);
                 mResideLayout.closePane();
-                mIcon.setImageDrawable(new IconicsDrawable(this).color(Color.WHITE).icon(MaterialDesignIconic.Icon.gmi_arrow_back).sizeDp((int) TOOL_BAR_ICON_SIZE));
+                mIcon.setImageDrawable(new IconicsDrawable(this).color(Color.WHITE).icon(MaterialDesignIconic.Icon.gmi_chevron_left).sizeDp((int) TOOL_BAR_ICON_SIZE));
                 mTitle.setText(R.string.clock_detail);
                 currentFragment = MyViewUtils.switchFragment(this, currentFragment, new ClockDetailsFragment());
                 break;
             case SETTING_CLOCK_DATA_FRAGMENT:
                 rightBtn.setVisibility(View.GONE);
                 mResideLayout.closePane();
-                mIcon.setImageDrawable(new IconicsDrawable(this).color(Color.WHITE).icon(MaterialDesignIconic.Icon.gmi_mood).sizeDp((int) TOOL_BAR_ICON_SIZE));
+                mIcon.setImageDrawable(new IconicsDrawable(this).color(Color.WHITE).icon(MaterialDesignIconic.Icon.gmi_chevron_left).sizeDp((int) TOOL_BAR_ICON_SIZE));
                 mTitle.setText("考勤设置");
-                currentFragment = MyViewUtils.switchFragment(this, currentFragment, new SettingClockDataFragment());
+                currentFragment = MyViewUtils.switchFragment(this, currentFragment, new SettingClockDataFragment(), b);
                 break;
         }
 
@@ -383,7 +381,7 @@ public class MainActivity extends BaseActivity implements ColorChooserDialog.Col
 
     @Subscribe
     public void onEvent(SwitchFragmentEvent event) {
-        goPage(event.getFragment());
+        goPage(event.getFragment(), null);
     }
 
     @Subscribe
@@ -498,6 +496,33 @@ public class MainActivity extends BaseActivity implements ColorChooserDialog.Col
     }
 
 
+    private void showPopDialog() {
+        new ActionSheetDialog(this)
+                .builder()
+                .setTitle("选择操作")
+                .setCancelable(true)
+                .setCanceledOnTouchOutside(true)
+                .addSheetItem("考勤详情", ThemeUtils.getThemeColor(this, R.attr.colorPrimary)
+                        , new ActionSheetDialog.OnSheetItemClickListener() {
+                    @Override
+                    public void onClick(int which) {
+                        goPage(CLOCK_DETAIL_FRAGMENT, null);
+                    }
+
+                })
+                .addSheetItem("考勤设置", ThemeUtils.getThemeColor(this, R.attr.colorPrimary)
+                        , new ActionSheetDialog.OnSheetItemClickListener() {
+                    @Override
+                    public void onClick(int which) {
+                        Bundle bundle = new Bundle();
+                        bundle.putString("view", SETTING_CLOCK_MAP_VIEW);
+                        goPage(SETTING_CLOCK_DATA_FRAGMENT, bundle);
+                    }
+
+                }).show();
+
+    }
+
     @Override
     public void onBackPressed() {
         super.onBackPressed();
@@ -507,6 +532,7 @@ public class MainActivity extends BaseActivity implements ColorChooserDialog.Col
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
+        Logger.v("您按下了" + keyCode);
         if (keyCode == KeyEvent.KEYCODE_BACK) {
             if (mResideLayout.isOpen()) {
                 mResideLayout.closePane();
@@ -519,8 +545,11 @@ public class MainActivity extends BaseActivity implements ColorChooserDialog.Col
 
             }
 
+        } else if (keyCode == KeyEvent.KEYCODE_MENU) {
+            if (nowPage.equals(CLOCK_FRAGMENT))
+                showPopDialog();
         }
-        return false;
+        return true;
     }
 
 
@@ -557,4 +586,5 @@ public class MainActivity extends BaseActivity implements ColorChooserDialog.Col
     public interface MainCallBack {
         void onBackPressed();
     }
+
 }

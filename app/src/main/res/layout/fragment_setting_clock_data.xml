@@ -1,69 +1,163 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
 
     <LinearLayout
-        android:id="@+id/ll_btn"
+        android:id="@+id/ll_edit"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_below="@+id/bmapView"
         android:background="@color/colorPrimary"
-        android:gravity="center"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:visibility="gone">
 
-        <EditText
-            android:id="@+id/et_distance"
-            android:layout_width="300dp"
-            android:layout_height="45dp"
-            android:background="@drawable/edit_green_frame_selector"
-            android:focusable="true"
-            android:hint="请输入打卡有效距离"
-            android:inputType="numberDecimal"
-            android:padding="8dp"
-            android:textSize="14sp" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="#33FFFFFF"
+            android:gravity="center_horizontal"
+            android:orientation="vertical">
 
-        <EditText
-            android:id="@+id/et_wifi_ssid"
-            android:layout_width="300dp"
-            android:layout_height="45dp"
-            android:layout_marginTop="10dp"
-            android:background="@drawable/edit_green_frame_selector"
-            android:focusable="true"
-            android:hint="请输入wifi名称"
-            android:padding="8dp"
-            android:textSize="14sp" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="left"
+                android:layout_marginTop="50dp"
+                android:paddingLeft="5dp"
+                android:text="数据设定"
+                android:textColor="@color/white"
+                android:textSize="20sp" />
 
-        <EditText
-            android:id="@+id/et_work_time"
-            android:layout_width="300dp"
-            android:layout_height="45dp"
-            android:layout_marginTop="10dp"
-            android:background="@drawable/edit_green_frame_selector"
-            android:focusable="true"
-            android:hint="请输入工作时长"
-            android:inputType="number"
-            android:padding="8dp"
-            android:textSize="14sp" />
+            <View
+                android:layout_width="300dp"
+                android:layout_height="1dp"
+                android:layout_gravity="left"
+                android:background="@color/white" />
 
-        <TextView
-            android:id="@+id/tv_ok"
-            android:layout_width="300dp"
-            android:layout_height="45dp"
-            android:layout_marginTop="20dp"
-            android:background="@drawable/write_solid"
-            android:gravity="center"
-            android:text="确定"
-            android:textColor="@color/white"
-            android:textSize="18sp" />
+            <EditText
+                android:id="@+id/et_distance"
+                android:layout_width="300dp"
+                android:layout_height="45dp"
+                android:layout_marginTop="25dp"
+                android:background="@drawable/edit_white_frame_selector"
+                android:focusable="true"
+                android:hint="请输入打卡有效距离(单位:米)"
+                android:inputType="numberDecimal"
+                android:padding="8dp"
+                android:textSize="14sp" />
 
+            <EditText
+                android:id="@+id/et_wifi_ssid"
+                android:layout_width="300dp"
+                android:layout_height="45dp"
+                android:layout_marginTop="10dp"
+                android:background="@drawable/edit_white_frame_selector"
+                android:focusable="true"
+                android:hint="请输入wifi名称(SSID)"
+                android:padding="8dp"
+                android:textSize="14sp" />
+
+            <EditText
+                android:id="@+id/et_work_time"
+                android:layout_width="300dp"
+                android:layout_height="45dp"
+                android:layout_marginTop="10dp"
+                android:background="@drawable/edit_white_frame_selector"
+                android:focusable="true"
+                android:hint="请输入工作时长(单位:小时)"
+                android:inputType="number"
+                android:padding="8dp"
+                android:textSize="14sp" />
+
+
+            <RelativeLayout
+                android:layout_width="300dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/tv_cancel"
+                    android:layout_width="140dp"
+                    android:layout_height="45dp"
+                    android:layout_alignParentLeft="true"
+                    android:background="@drawable/write_solid"
+                    android:gravity="center"
+                    android:text="返回"
+                    android:textColor="@color/white"
+                    android:textSize="18sp" />
+
+
+                <TextView
+                    android:id="@+id/tv_ok"
+                    android:layout_width="140dp"
+                    android:layout_height="45dp"
+                    android:layout_alignParentRight="true"
+                    android:background="@drawable/write_solid"
+                    android:gravity="center"
+                    android:text="确定"
+                    android:textColor="@color/white"
+                    android:textSize="18sp" />
+
+            </RelativeLayout>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="right"
+                android:layout_marginTop="50dp"
+                android:paddingRight="5dp"
+                android:text="当前设定"
+                android:textColor="@color/white"
+                android:textSize="20sp" />
+
+            <View
+                android:layout_width="300dp"
+                android:layout_height="1dp"
+                android:layout_gravity="right"
+                android:background="@color/white" />
+
+            <TextView
+                android:id="@+id/tv_setting_detail"
+                android:layout_width="300dp"
+                android:layout_height="120dp"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="25dp"
+                android:background="#33FFFFFF"
+                android:padding="5dp"
+                android:text=""
+                android:textColor="@color/white" />
+        </LinearLayout>
     </LinearLayout>
 
-    <com.baidu.mapapi.map.MapView
-        android:id="@+id/bmapView"
-        android:layout_width="fill_parent"
-        android:layout_height="350dp"
-        android:clickable="true" />
+
+    <LinearLayout
+        android:id="@+id/ll_map"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:visibility="visible">
+
+        <com.baidu.mapapi.map.MapView
+            android:id="@+id/bmapView"
+            android:layout_width="fill_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="10"
+            android:clickable="true" />
+
+        <TextView
+            android:id="@+id/tv_other_setting"
+            android:layout_width="match_parent"
+            android:layout_height="45dp"
+            android:background="@color/colorPrimary"
+            android:gravity="center"
+            android:text="其它设置"
+            android:textColor="@color/white"
+            android:textSize="16dp" />
+    </LinearLayout>
 
 
-</RelativeLayout>
+</LinearLayout>

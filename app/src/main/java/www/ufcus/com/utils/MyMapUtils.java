@@ -2,14 +2,28 @@ package www.ufcus.com.utils;
 
 import android.content.Context;
 import android.text.TextUtils;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import com.baidu.location.BDLocation;
 import com.baidu.location.Poi;
 import com.baidu.mapapi.map.BaiduMap;
+import com.baidu.mapapi.map.BitmapDescriptor;
+import com.baidu.mapapi.map.BitmapDescriptorFactory;
+import com.baidu.mapapi.map.InfoWindow;
+import com.baidu.mapapi.map.Marker;
+import com.baidu.mapapi.map.MarkerOptions;
 import com.baidu.mapapi.map.OverlayOptions;
 import com.baidu.mapapi.map.PolygonOptions;
 import com.baidu.mapapi.map.Stroke;
 import com.baidu.mapapi.model.LatLng;
+import com.baidu.mapapi.search.geocode.GeoCodeResult;
+import com.baidu.mapapi.search.geocode.GeoCoder;
+import com.baidu.mapapi.search.geocode.OnGetGeoCoderResultListener;
+import com.baidu.mapapi.search.geocode.ReverseGeoCodeOption;
+import com.baidu.mapapi.search.geocode.ReverseGeoCodeResult;
 import com.baidu.mapapi.utils.DistanceUtil;
 import com.orhanobut.logger.Logger;
 
@@ -221,6 +235,104 @@ public class MyMapUtils {
         OverlayOptions ooPolygon = new PolygonOptions().points(pts)
                 .stroke(new Stroke(1, ThemeUtils.getThemeColor(context, R.attr.mapAreaColor))).fillColor(ThemeUtils.getThemeColor(context, R.attr.mapAreaColor));
         mBaiduMap.addOverlay(ooPolygon);
+
+    }
+
+
+    /**
+     * 做标记
+     *
+     * @param latLng
+     */
+    public static void maker(BaiduMap mBaiduMap, LatLng latLng, final OnGetGeoCoderResultListener makerCallBack) {
+        BitmapDescriptor bitmap = null;
+        BitmapDescriptor mCurrentMarker;
+        // 设置marker图标
+        bitmap = BitmapDescriptorFactory.fromResource(R.drawable.maker);
+        //获取经纬度
+        double latitude = latLng.latitude;
+        double longitude = latLng.longitude;
+        Logger.v("latitude=" + latitude + ",longitude=" + longitude);
+        //先清除图层
+        mBaiduMap.clear();
+        // 定义Maker坐标点
+        LatLng point = new LatLng(latitude, longitude);
+        // 构建MarkerOption，用于在地图上添加Marker
+        MarkerOptions options = new MarkerOptions().position(point)
+                .icon(bitmap);
+        // 在地图上添加Marker，并显示
+        mBaiduMap.addOverlay(options);
+        //实例化一个地理编码查询对象
+        GeoCoder geoCoder = GeoCoder.newInstance();
+        //设置反地理编码位置坐标
+        ReverseGeoCodeOption op = new ReverseGeoCodeOption();
+        op.location(latLng);
+        //发起反地理编码请求(经纬度->地址信息)
+        geoCoder.reverseGeoCode(op);
+        geoCoder.setOnGetGeoCodeResultListener(new OnGetGeoCoderResultListener() {
+
+            @Override
+            public void onGetReverseGeoCodeResult(ReverseGeoCodeResult arg0) {
+                makerCallBack.onGetReverseGeoCodeResult(arg0);
+            }
+
+            @Override
+            public void onGetGeoCodeResult(GeoCodeResult arg0) {
+            }
+        });
+
+    }
+
+
+    /**
+     * 显示气泡
+     *
+     * @param marker
+     */
+    public static void showLocation(final Context context, BaiduMap mBaiduMap, final Marker marker, final String address, final View.OnClickListener onClickListener) {
+        InfoWindow mInfoWindow;
+        // 创建InfoWindow展示的view
+        LatLng pt = null;
+        final double latitude, longitude;
+        latitude = marker.getPosition().latitude;
+        longitude = marker.getPosition().longitude;
+
+        View view = LayoutInflater.from(context).inflate(R.layout.show_map_position_item, null); //自定义气泡形状
+        TextView tvTitle = (TextView) view.findViewById(R.id.area);
+        TextView tvPosition = (TextView) view.findViewById(R.id.position);
+        TextView tvSet = (TextView) view.findViewById(R.id.tv_set);
+        if (onClickListener != null) {
+            tvSet.setVisibility(View.VISIBLE);
+        } else {
+            tvSet.setVisibility(View.GONE);
+        }
+        final String finalAddress = address;
+        tvSet.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                PreUtils.putString(context, "j_w", longitude + "," + latitude);
+                PreUtils.putString(context, "address", finalAddress);
+                Toast.makeText(context, "坐标设置成功", Toast.LENGTH_SHORT).show();
+                onClickListener.onClick(v);
+            }
+        });
+        pt = new LatLng(latitude + 0.0004, longitude + 0.00005);
+        tvTitle.setText(TextUtils.isEmpty(address) ? "无数据" : address);
+        tvPosition.setText(String.format("la:%.5f,lo:%.5f", latitude, longitude));
+
+        // 定义用于显示该InfoWindow的坐标点
+        // 创建InfoWindow的点击事件监听者
+//        InfoWindow.OnInfoWindowClickListener listener = new InfoWindow.OnInfoWindowClickListener() {
+//            public void onInfoWindowClick() {
+//                mBaiduMap.hideInfoWindow();//影藏气泡
+//
+//            }
+//        };
+        // 创建InfoWindow
+//        mInfoWindow = new InfoWindow(view, pt, listener);
+        mInfoWindow = new InfoWindow(view, pt, 1);
+        mBaiduMap.showInfoWindow(mInfoWindow); //显示气泡
 
     }
 }

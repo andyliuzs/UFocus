@@ -30,19 +30,27 @@
             android:textSize="14sp" />
     </RelativeLayout>
 
-    <ListView
-        android:id="@+id/list"
+    <LinearLayout
+        android:id="@+id/ll_list"
         android:layout_width="match_parent"
         android:layout_height="130dp"
         android:layout_below="@+id/rl_map"
-        android:divider="@null" />
+        android:orientation="vertical">
+
+        <ListView
+            android:id="@+id/list"
+            android:layout_width="match_parent"
+            android:layout_height="130dp"
+
+            android:divider="@null" />
+    </LinearLayout>
 
 
     <LinearLayout
         android:id="@+id/ll_btn"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@+id/list"
+        android:layout_below="@+id/ll_list"
         android:background="@color/colorPrimary"
         android:gravity="center"
         android:orientation="vertical">

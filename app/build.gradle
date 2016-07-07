@@ -26,7 +26,8 @@ android {
         config {
             keyAlias 'android.keystore'
             keyPassword 'liushuai'
-            storeFile file("/F:/lzs/android/android.keystore")
+//            storeFile file("/F:/lzs/android/android.keystore")
+            storeFile file("/home/andyliu/lzs/code/test/android.keystore")
             storePassword 'liushuai'
         }
     }

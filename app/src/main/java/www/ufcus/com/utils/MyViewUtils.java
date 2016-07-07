@@ -1,10 +1,9 @@
 package www.ufcus.com.utils;
 
-import android.app.Activity;
 import android.content.Context;
 import android.graphics.Color;
+import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentActivity;
 import android.view.Gravity;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -69,6 +68,24 @@ public class MyViewUtils {
         mToast.show();
     }
 
+
+    /**
+     * 切换fragment
+     *
+     * @param activity
+     * @param currentFragment
+     * @param fragment
+     * @return
+     */
+    public static Fragment switchFragment(MainActivity activity, Fragment currentFragment, Fragment fragment, Bundle args) {
+        fragment.setArguments(args);
+        if (currentFragment == null || !fragment.getClass().getName().equals(currentFragment.getClass().getName()) || fragment.getClass().getSimpleName().equals("SettingClockDataFragment")) {
+            activity.getSupportFragmentManager().beginTransaction().replace(R.id.container, fragment).commit();
+            return fragment;
+        } else {
+            return currentFragment;
+        }
+    }
 
     /**
      * 切换fragment

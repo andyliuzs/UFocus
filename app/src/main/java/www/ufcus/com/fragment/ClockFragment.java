@@ -14,26 +14,35 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.AsyncTaskLoader;
 import android.support.v4.content.Loader;
+import android.text.InputType;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
+import com.afollestad.materialdialogs.DialogAction;
+import com.afollestad.materialdialogs.MaterialDialog;
 import com.baidu.location.BDLocation;
 import com.baidu.location.BDLocationListener;
 import com.baidu.location.LocationClient;
 import com.baidu.location.LocationClientOption;
 import com.baidu.mapapi.SDKInitializer;
 import com.baidu.mapapi.map.BaiduMap;
-import com.baidu.mapapi.map.BitmapDescriptor;
+import com.baidu.mapapi.map.MapPoi;
 import com.baidu.mapapi.map.MapStatus;
 import com.baidu.mapapi.map.MapStatusUpdateFactory;
 import com.baidu.mapapi.map.MapView;
+import com.baidu.mapapi.map.Marker;
 import com.baidu.mapapi.map.MyLocationConfiguration;
 import com.baidu.mapapi.map.MyLocationData;
 import com.baidu.mapapi.model.LatLng;
+import com.baidu.mapapi.search.geocode.GeoCodeResult;
+import com.baidu.mapapi.search.geocode.OnGetGeoCoderResultListener;
+import com.baidu.mapapi.search.geocode.ReverseGeoCodeResult;
+import com.mikepenz.iconics.IconicsDrawable;
+import com.mikepenz.material_design_iconic_typeface_library.MaterialDesignIconic;
 import com.orhanobut.logger.Logger;
 
 import org.greenrobot.eventbus.EventBus;
@@ -48,11 +57,14 @@ import butterknife.ButterKnife;
 import butterknife.OnLongClick;
 import me.xiaopan.android.content.res.DimenUtils;
 import www.ufcus.com.R;
+import www.ufcus.com.activity.MainActivity;
 import www.ufcus.com.adapter.ClockAdapter;
 import www.ufcus.com.beans.ClockBean;
 import www.ufcus.com.event.CanSlideEvent;
 import www.ufcus.com.event.SkinChangeEvent;
+import www.ufcus.com.event.SwitchFragmentEvent;
 import www.ufcus.com.utils.MyMapUtils;
+import www.ufcus.com.utils.MyViewUtils;
 import www.ufcus.com.utils.PreUtils;
 import www.ufcus.com.utils.ThemeUtils;
 import www.ufcus.com.utils.Utils;
@@ -68,9 +80,6 @@ public class ClockFragment extends Fragment implements LoaderManager.LoaderCallb
     LocationClient mLocationClient;
     public MyLocationListener myListener = new MyLocationListener();
     private MyLocationConfiguration.LocationMode mCurrentMode;
-    BitmapDescriptor mCurrentMarker;
-    private static final int accuracyCircleFillColor = 0xAAFFFF88;
-    private static final int accuracyCircleStrokeColor = 0xAA00FF00;
 
     @BindView(R.id.bmapView)
     MapView mMapView;
@@ -87,6 +96,8 @@ public class ClockFragment extends Fragment implements LoaderManager.LoaderCallb
     View btnParent;
     @BindView(R.id.rl_map)
     View mapParent;
+    @BindView(R.id.ll_list)
+    View listParent;
     boolean isFirstLoc = true; // 是否首次定位
     WifiOpenHelper wifiOpenHelper;
     boolean isInRadius = false;
@@ -120,18 +131,96 @@ public class ClockFragment extends Fragment implements LoaderManager.LoaderCallb
         ButterKnife.bind(this, rootView);
         EventBus.getDefault().register(this);
         EventBus.getDefault().post(new CanSlideEvent(true));
-        initMap();
         initWifi();
         getActivity().getContentResolver().registerContentObserver(ClockBean.ITEMS_URI, true, mContentObserver);
         clockAdapter = new ClockAdapter(getActivity(), clocks);
         mList.setAdapter(clockAdapter);
-        initData();
+        initMap();
         setViewColor();
+        initData();
         return rootView;
     }
 
+    @Override
+    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        testData();
+
+    }
+
+    /**
+     * 测试数据,如果有服务端可删除本方法
+     */
+    private void testData() {
+        //116.240794,40.072816
+//        if (TextUtils.isEmpty(PreUtils.getString(this, "j_w", ""))) {
+//            PreUtils.putString(this, "phone_number", "18301214392");
+//            PreUtils.putString(this, "attend_wifi_ssid", "office");
+//            PreUtils.putFloat(this, "work_time", 8);
+//            //办公区域经纬度 默认用友软件园
+//            PreUtils.putString(this, "j_w", "116.240794,40.072816");
+//            //距离目标点有效距离默认300米
+//            PreUtils.putFloat(this, "distance", 200);
+//            PreUtils.putString(this, "address", "用友软件园附近");
+//        }
+        if (TextUtils.isEmpty(PreUtils.getString(getActivity(), "phone_number", ""))) {
+            new MaterialDialog.Builder(getActivity())
+                    .title("请输入您的手机号")
+                    .inputType(InputType.TYPE_CLASS_PHONE)
+                    .cancelable(false)
+                    .inputRange(11, 11)
+                    .input("手机号", "", false, new MaterialDialog.InputCallback() {
+                        @Override
+                        public void onInput(MaterialDialog dialog, CharSequence input) {
+                            PreUtils.putString(getActivity(), "phone_number", input.toString());
+                            if (TextUtils.isEmpty(PreUtils.getString(getActivity(), "j_w", ""))) {
+                                new MaterialDialog.Builder(getActivity())
+                                        .title("提示")
+                                        .cancelable(false)
+                                        .icon(new IconicsDrawable(getActivity())
+                                                .color(ThemeUtils.getThemeColor(getActivity(), R.attr.colorPrimary))
+                                                .icon(MaterialDesignIconic.Icon.gmi_alert_circle)
+                                                .sizeDp(20))
+                                        .content("您还没有设置考勤参数，请设置！")
+                                        .positiveText("好的")
+                                        .onPositive(new MaterialDialog.SingleButtonCallback() {
+                                            @Override
+                                            public void onClick(MaterialDialog dialog, DialogAction which) {
+                                                EventBus.getDefault().post(new SwitchFragmentEvent(MainActivity.SETTING_CLOCK_DATA_FRAGMENT));
+                                            }
+                                        })
+                                        .show();
+                            }
+                            dialog.dismiss();
+                        }
+                    })
+                    .show();
+        }
+
+    }
+
+
     private void initData() {
         getLoaderManager().initLoader(0, null, this);
+        String j_w = PreUtils.getString(getActivity(), "j_w", "");
+        if (!TextUtils.isEmpty(j_w)) {
+            String[] jw = j_w.split(",");
+            double t_latitude, t_longitude;
+            t_longitude = Double.valueOf(jw[0]);
+            t_latitude = Double.valueOf(jw[1]);
+            LatLng target = new LatLng(t_latitude, t_longitude);
+            MyMapUtils.maker(mBaiduMap, target, new OnGetGeoCoderResultListener() {
+                @Override
+                public void onGetGeoCodeResult(GeoCodeResult geoCodeResult) {
+
+                }
+
+                @Override
+                public void onGetReverseGeoCodeResult(ReverseGeoCodeResult reverseGeoCodeResult) {
+
+                }
+            });
+        }
 
     }
 
@@ -153,12 +242,40 @@ public class ClockFragment extends Fragment implements LoaderManager.LoaderCallb
         mBaiduMap = mMapView.getMap();
         // 开启定位图层
         mBaiduMap.setMyLocationEnabled(true);
+
+        //删除logo
+        mMapView.removeViewAt(1);
+
 //        MyMapUtils.addArea(getActivity(), mBaiduMap);
         // 定位初始化
         mLocationClient = new LocationClient(getActivity());
         mLocationClient.registerLocationListener(myListener);
-        initLocation();
 
+
+        mBaiduMap.setOnMapClickListener(new BaiduMap.OnMapClickListener() {
+
+            @Override
+            public boolean onMapPoiClick(MapPoi arg0) {
+                // TODO Auto-generated method stub
+                return false;
+            }
+
+            //此方法就是点击地图监听
+            @Override
+            public void onMapClick(LatLng latLng) {
+
+            }
+        });
+
+        mBaiduMap.setOnMarkerClickListener(new BaiduMap.OnMarkerClickListener() {
+            @Override
+            public boolean onMarkerClick(Marker marker) {
+                String address = PreUtils.getString(getActivity(), "address", "无数据");
+                MyMapUtils.showLocation(getActivity(), mBaiduMap, marker, address, null);
+                return false;
+            }
+        });
+        initLocation();
     }
 
 
@@ -207,8 +324,10 @@ public class ClockFragment extends Fragment implements LoaderManager.LoaderCallb
 //        MyMapUtils.addArea(getActivity(), mBaiduMap);
         tvClock.refreshDrawableState();
         btnParent.setBackgroundColor(ThemeUtils.getThemeColor(getActivity(), R.attr.colorPrimary));
+        listParent.setBackgroundColor(ThemeUtils.getThemeColor(getActivity(), R.attr.colorPrimary));
         GradientDrawable background = (GradientDrawable) mapParent.getBackground();
         background.setStroke(DimenUtils.dp2px(getActivity(), 3), ThemeUtils.getThemeColor(getActivity(), R.attr.colorPrimary));
+
     }
 
     @OnLongClick({R.id.tv_clock})
@@ -318,10 +437,10 @@ public class ClockFragment extends Fragment implements LoaderManager.LoaderCallb
         boolean connectedWifi = wifiOpenHelper.checkIsConnected(useWifiSSID);
 
         if (!connectedWifi) {
-            Toast.makeText(getActivity(), "未连接指定wifi", Toast.LENGTH_SHORT).show();
+            MyViewUtils.showCenterToast(getActivity(), "未连接指定wifi");
             return false;
         } else if (!isInRadius) {
-            Toast.makeText(getActivity(), "未在办公区域", Toast.LENGTH_SHORT).show();
+            MyViewUtils.showCenterToast(getActivity(), "未在办公区域");
             return false;
         } else {
             return true;
@@ -357,6 +476,11 @@ public class ClockFragment extends Fragment implements LoaderManager.LoaderCallb
     public void onLoadFinished(Loader<ArrayList<ClockBean>> loader, ArrayList<ClockBean> data) {
         Logger.v("onLoadFinished");
         clocks = data;
+        if (data.size() <= 0) {
+            mList.setVisibility(View.GONE);
+        } else {
+            mList.setVisibility(View.VISIBLE);
+        }
         clockAdapter.setList(data);
         clockAdapter.notifyDataSetChanged();
     }
