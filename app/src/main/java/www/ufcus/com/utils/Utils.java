@@ -52,6 +52,9 @@ public class Utils {
      * @return
      */
     public static int getNumberDigit(int number) {
+        if (number == 0) {
+            return 1;
+        }
         int n = 0;
         while (number != 0) {
             number /= 10;
